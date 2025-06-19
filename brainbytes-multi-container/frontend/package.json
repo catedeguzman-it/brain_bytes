@@ -1,0 +1,16 @@
+{
+  "name": "brainbytes-frontend",
+  "version": "1.0.0",
+  "description": "Frontend for BrainBytes",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "next": "^12.0.0",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "axios": "^0.24.0"
+  }
+}
