@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 3000;
 
 
 const token = process.env.HUGGINGFACE_TOKEN;
-console.log("Hugging Face Token:", token);
+console.log("Token loaded:", token ? "✅" : "❌");
 
 
 // Middleware

@@ -81,7 +81,10 @@ async function generateResponse(question) {
 
     // Use AbortController for timeout
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 second timeout
+
+    // 🔍 Start timing the API request
+    console.time("HF API Request");
 
     // Make the API request with authentication and timeout
     const response = await fetch(API_URL, {
@@ -94,10 +97,13 @@ async function generateResponse(question) {
       body: JSON.stringify({
         inputs: input,
         options: {
-          wait_for_model: false // Don't wait for model to be ready - faster responses
+          wait_for_model: true // Wait for model to be ready - slower responses
         }
       }),
     });
+
+    // ⏱ End timing
+    console.timeEnd("HF API Request");
 
     // Clear the timeout since we got a response
     clearTimeout(timeoutId);
