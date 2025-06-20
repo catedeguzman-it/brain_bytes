@@ -1,3 +1,7 @@
+// Load environment variables
+require('dotenv').config();
+
+
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -6,6 +10,11 @@ const aiService = require('./aiService');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+
+const token = process.env.HUGGINGFACE_TOKEN;
+console.log("Hugging Face Token:", token);
+
 
 // Middleware
 app.use(cors());
