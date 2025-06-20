@@ -1,10 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 
-// Emojis instead of icon packages
-const Bot = (props) => <span {...props}>🤖</span>;
-const User = (props) => <span {...props}>👤</span>;
-
 export default function Home() {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
@@ -40,7 +36,12 @@ export default function Home() {
       };
       setMessages(prev => [...prev, tempUserMsg]);
 
-      const response = await axios.post('http://localhost:3000/api/messages', { text: userMsg });
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_BASE}/api/messages`, {
+        text: userMsg
+      });
+      console.log('API base:', process.env.NEXT_PUBLIC_API_BASE);
+      console.log('User message:', userMsg);
+      console.log('AI response:', response.data);
 
       setMessages(prev => {
         const filtered = prev.filter(msg => msg._id !== tempUserMsg._id);
@@ -60,7 +61,9 @@ export default function Home() {
   };
 
   useEffect(() => {
-    fetchMessages();
+    (async () => {
+      await fetchMessages();
+    })();
   }, []);
 
   useEffect(() => {
@@ -68,45 +71,59 @@ export default function Home() {
   }, [messages]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1e1e2f] to-[#2a2a40] flex flex-col items-center py-10 px-4 font-[Poppins,sans-serif] text-white">
-      <div className="w-full max-w-3xl bg-[#2b2b44] shadow-2xl rounded-2xl p-6 space-y-4 border border-purple-500">
-        <h1 className="text-3xl font-extrabold text-purple-300 text-center flex items-center justify-center gap-2">
-          <span className="text-3xl animate-bounce">🧠</span>
-          BrainBytes AI Tutor
-        </h1>
+    <div style={{ backgroundColor: '#1a1a2e', padding: '18px', borderRadius: '12px' }}>
+    <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px', fontFamily: 'Poppins, sans-serif', color: '#f9fafb' }}>
+      <div className="bg-gradient-to-br from-[#1e1e2f] to-[#2a2a40] flex flex-col items-center py-10 px-4 font-[Poppins,sans-serif] text-white">
+        <div className="w-full max-w-3xl bg-[#2b2b44] shadow-2xl rounded-2xl p-6 space-y-4 border border-purple-500">
+          <h1 className="text-3xl font-extrabold text-purple-300 text-center flex items-center justify-center gap-2">
+            <span className="text-3xl animate-bounce">🧠</span>
+            BrainBytes AI Tutor
+          </h1>
 
-        <div className="h-[450px] overflow-y-auto rounded-xl p-4 bg-[#1c1c2e] border border-purple-700">
+        <div className="h-[400px] overflow-y-auto bg-purple-50 border border-pink-200 rounded-xl p-4">
           {loading ? (
-            <p className="text-center text-gray-400">🌀 Loading conversation...</p>
+            <p className="text-center text-pink-400">⏳ Loading messages...</p>
           ) : messages.length === 0 ? (
-            <div className="text-center text-gray-400 italic mt-10">
-              No messages yet. Be the first to ask something! 🎉
-            </div>
+            <p className="text-center italic text-pink-400">No messages yet. Be the first to ask something! 🎉</p>
           ) : (
             <ul className="space-y-4">
-              {messages.map((msg) => (
+              {messages.map((message) => (
                 <li
-                  key={msg._id}
-                  className={`p-4 rounded-2xl w-fit max-w-[80%] shadow-md ${
-                    msg.isUser
-                      ? 'bg-gradient-to-br from-blue-600 to-indigo-700 ml-auto text-right'
-                      : 'bg-gradient-to-br from-green-600 to-emerald-700 mr-auto text-left'
+                  key={message._id}
+                  style={{ 
+                      padding: '12px 16px', 
+                      margin: '8px 0', 
+                      backgroundColor: message.isUser ? '#374151' : '#4B5563',
+                      color: '#f9fafb',
+                      fontFamily: 'Inter, sans-serif',
+                      borderRadius: '12px',
+                      maxWidth: '80%',
+                      wordBreak: 'break-word',
+                      marginLeft: message.isUser ? 'auto' : '0',
+                      marginRight: message.isUser ? '0' : 'auto',
+                      boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
+                    }}
+
+                  className={`p-4 rounded-2xl max-w-[80%] shadow-md ${
+                    message.isUser
+                      ? 'ml-auto bg-gradient-to-br from-blue-200 to-indigo-200 text-right'
+                      : 'mr-auto bg-gradient-to-br from-green-200 to-emerald-200 text-left'
                   }`}
                 >
-                  <div className={`flex items-center gap-2 mb-1 ${msg.isUser ? 'justify-end' : 'justify-start'}`}>
-                    {msg.isUser ? <User className="text-blue-300" /> : <Bot className="text-green-300" />}
-                    <span className="text-sm text-gray-200 font-semibold">
-                      {msg.isUser ? 'You' : 'AI Tutor'}
+                  <div className="flex items-center gap-2 mb-1">
+                    <span>{message.isUser ? '🙋‍♂️' : '🤖'}</span>
+                    <span className="text-sm font-semibold text-gray-600">
+                      {message.isUser ? 'You' : 'AI Tutor'}
                     </span>
                   </div>
-                  <p className="text-base text-white">{msg.text}</p>
-                  <small className="text-gray-300 text-xs block mt-2">
-                    {new Date(msg.createdAt).toLocaleTimeString()}
+                  <p className="text-base text-gray-800">{message.text}</p>
+                  <small className="text-gray-500 text-xs block mt-1">
+                    {new Date(message.createdAt).toLocaleString()}
                   </small>
                 </li>
               ))}
               {isTyping && (
-                <li className="italic text-purple-300 animate-pulse bg-[#33334d] p-4 rounded-xl w-fit border border-purple-500">
+                <li className="italic text-pink-500 animate-pulse bg-pink-200 p-4 rounded-xl w-fit border border-pink-300">
                   ✨ AI is thinking...
                 </li>
               )}
@@ -115,28 +132,42 @@ export default function Home() {
           )}
         </div>
 
-        <form onSubmit={handleSubmit} className="flex gap-2">
+        <form onSubmit={handleSubmit} className="flex w-full max-w-3xl mt-4">
           <input
             type="text"
             value={newMessage}
             onChange={(e) => setNewMessage(e.target.value)}
-            placeholder="Ask something fun and smart!"
-            className="flex-1 px-4 py-3 rounded-lg border-2 border-purple-500 bg-[#1e1e2f] text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
+            placeholder="Type your question here..."
             disabled={isTyping}
-          />
-          <button
-            type="submit"
-            className={`font-bold px-6 py-3 rounded-lg transition duration-300 ${
-              isTyping
-                ? 'bg-purple-400 cursor-not-allowed text-white'
-                : 'bg-purple-600 hover:bg-purple-700 text-white shadow-md'
-            }`}
-            disabled={isTyping}
-          >
-            🚀 {isTyping ? 'Sending...' : 'Send'}
-          </button>
-        </form>
+            className="flex-1 bg-[#1e1e2f] text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
+            style={{
+              flex: '1',
+              padding: '12px 16px',
+              borderRadius: '12px 0 0 12px',
+              border: '1px solid #26C6DA',
+              fontSize: '16px',
+              transition: 'border-color 0.3s ease',
+              width: '80%',
+            }}
+        />
+        <button
+          type="submit"
+          style={{
+            padding: '12px 16px',
+            backgroundColor: '#17a2b8',
+            color: 'white',
+            border: 'none',
+            borderRadius: '0 12px 12px 0',
+            fontSize: '16px',
+          }}
+          disabled={isTyping}
+        >
+          🚀 {isTyping ? 'Sending...' : 'Send'}
+        </button>
+      </form>
+    </div>
       </div>
+    </div>
     </div>
   );
 }

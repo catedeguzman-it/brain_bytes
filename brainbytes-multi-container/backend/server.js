@@ -1,7 +1,9 @@
+require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const aiService = require('./aiService');
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -88,13 +90,13 @@ app.post('/api/messages', async (req, res) => {
       aiMessage,
       category: aiResult.category
     });
-  } catch (err) {
-    console.error('Error in /api/messages route:', err);
-    res.status(400).json({ error: err.message });
-  }
-});
+    } catch (err) {
+      console.error('Error in /api/messages route:', err);
+      res.status(400).json({ error: err.message });
+    }
+    });
 
-// Start the server
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+    // Start the server
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`🚀 Server running on port ${PORT}`);
 });
