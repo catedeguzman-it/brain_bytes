@@ -5,8 +5,6 @@ services:
     build: ./frontend
     ports:
       - "8080:3000"
-    environment:
-      - NEXT_PUBLIC_API_BASE=http://backend:3000
     volumes:
       - ./frontend:/usr/src/app
       - /usr/src/app/node_modules
@@ -14,7 +12,8 @@ services:
       - backend
     restart: unless-stopped
 
-  # Backend API container
+
+   # Backend API container
   backend:
     build: ./backend
     ports:
@@ -23,7 +22,7 @@ services:
       - ./backend:/usr/src/app
       - /usr/src/app/node_modules
     environment:
-      - HUGGINGFACE_TOKEN=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  # Replace this with your token
+      - HUGGINGFACE_TOKEN=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  # Replace this with your token
     depends_on:
       - mongo
     restart: unless-stopped

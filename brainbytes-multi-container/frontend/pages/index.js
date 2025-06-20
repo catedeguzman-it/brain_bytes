@@ -8,9 +8,10 @@ export default function Home() {
   const [isTyping, setIsTyping] = useState(false);
   const messageEndRef = useRef(null);
 
+  // Fetch messages from the API
   const fetchMessages = async () => {
     try {
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_BASE}/api/messages`);
+      const response = await axios.get('http://localhost:3000/api/messages');
       setMessages(response.data);
       setLoading(false);
     } catch (error) {
@@ -19,15 +20,17 @@ export default function Home() {
     }
   };
 
+  // Submit a new message
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!newMessage.trim()) return;
 
     try {
-      setIsTyping(true);
+      setIsTyping(true); // Show typing indicator
       const userMsg = newMessage;
       setNewMessage('');
 
+      // Optimistically add the user's message to the chat
       const tempUserMsg = {
         _id: Date.now().toString(),
         text: userMsg,
@@ -36,13 +39,12 @@ export default function Home() {
       };
       setMessages(prev => [...prev, tempUserMsg]);
 
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_BASE}/api/messages`, {
+      // Send the message to the API (backend) and get AI response
+      const response = await axios.post('http://localhost:3000/api/messages', {
         text: userMsg
       });
-      console.log('API base:', process.env.NEXT_PUBLIC_API_BASE);
-      console.log('User message:', userMsg);
-      console.log('AI response:', response.data);
-
+     
+      // Update the chat with the AI response
       setMessages(prev => {
         const filtered = prev.filter(msg => msg._id !== tempUserMsg._id);
         return [...filtered, response.data.userMessage, response.data.aiMessage];
@@ -60,16 +62,19 @@ export default function Home() {
     }
   };
 
+  // Scroll to the bottom when messages change
+  useEffect(() => {
+    messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  // Fetch messages on component mount
   useEffect(() => {
     (async () => {
       await fetchMessages();
     })();
   }, []);
 
-  useEffect(() => {
-    messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
+  
   return (
     <div style={{ backgroundColor: '#1a1a2e', padding: '18px', borderRadius: '12px' }}>
     <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px', fontFamily: 'Poppins, sans-serif', color: '#f9fafb' }}>
