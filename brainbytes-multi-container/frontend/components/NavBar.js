@@ -1,20 +1,11 @@
-import { useRouter } from 'next/router';
-import styles from '../styles/NavBar.module.css'; // optional, or use inline styles
+import styles from '../styles/NavBar.module.css';
 
-export default function NavBar() {
-  const router = useRouter();
-
-  const handleLogout = () => {
-    localStorage.removeItem('isAuthenticated');
-    localStorage.removeItem('sessionId');
-    router.push('/login');
-  };
-
+export default function NavBar({ onLogout }) {
   return (
     <nav className={styles.navbar}>
       <div className={styles.logo}>🧠 BrainBytes</div>
       <div className={styles.links}>
-        <button onClick={handleLogout} className={styles.logoutButton}>
+        <button onClick={onLogout} className={styles.logoutButton}>
           Logout
         </button>
       </div>

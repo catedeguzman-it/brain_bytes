@@ -1,42 +1,59 @@
 import { useState, useEffect, useRef } from 'react';
+import { useRouter } from 'next/router'; // ✅ Import router
 import styles from '../styles/ChatInterface.module.css';
 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://hostname:4000';
+
 export default function ChatInterface() {
+  const router = useRouter(); // ✅ Initialize router
+
+  // ✅ Redirect unauthenticated users
+  const [authChecked, setAuthChecked] = useState(false); // 👈 State to track if auth check is done
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [token, setToken] = useState(null);
   const messagesEndRef = useRef(null);
 
-
-  // ✅ UseEffect to load chat history and manage session ID
+  // ✅ Check authentication on initial render
   useEffect(() => {
-    const fetchHistory = async () => {
-      const sessionId = localStorage.getItem('sessionId');
-      if (sessionId) {
-        try {
-          const response = await fetch(`http://localhost:4000/api/chat/history/${sessionId}`);
-          const data = await response.json();
-          setMessages(data.messages.map(msg => ({
-            id: Date.now() + Math.random(),
-            text: msg.text,
-            sender: msg.sender,
-            timestamp: msg.timestamp || msg.createdAt
-          })));
-        } catch (err) {
-          console.error('Error fetching history:', err);
-        }
+  const storedToken = localStorage.getItem('token');
+  if (!storedToken) {
+    router.push('/login');
+  } else {
+    setToken(storedToken);
+    setAuthChecked(true); // Allow rendering of chat interface
+  }
+}, []);
+
+
+  // ✅ Helper: Get or create session ID
+  const getOrCreateSessionId = () => {
+    let sessionId = localStorage.getItem('sessionId');
+    if (!sessionId) {
+      sessionId = crypto.randomUUID();
+      localStorage.setItem('sessionId', sessionId);
+    }
+    return sessionId;
+  };
+
+  // ✅ Load message history on initial render
+  useEffect(() => {
+    const loadHistory = async () => {
+      const sessionId = getOrCreateSessionId();
+      try {
+        const response = await fetch(`${API_BASE}/api/chat/history/${sessionId}`);
+        const data = await response.json();
+        setMessages(data.messages);
+      } catch (err) {
+        console.error('Error loading history:', err);
       }
     };
 
-    if (!localStorage.getItem('sessionId')) {
-      localStorage.setItem('sessionId', crypto.randomUUID());
-    }
-
-    fetchHistory();
+    loadHistory();
   }, []);
 
-  
-  // Auto-scroll to the bottom of the chat
+  // ✅ Auto-scroll to the bottom when messages change
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
@@ -45,66 +62,71 @@ export default function ChatInterface() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  // ✅ Handle sending a message
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (input.trim() === '') return;
 
-    // Add user message to chat
+    // Generate a valid MongoDB ObjectId-like fallback if needed
+    const sessionId = localStorage.getItem('sessionId') || '64a1d4f6b1fcd75f3c1e0aab';
     const userMessage = {
       id: Date.now(),
       text: input,
       sender: 'user',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
-    setMessages(prevMessages => [...prevMessages, userMessage]);
+
+    setMessages((prev) => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
 
     try {
-      // Send message to backend API
-     const sessionId = localStorage.getItem('sessionId') || crypto.randomUUID();
-     localStorage.setItem('sessionId', sessionId); // Ensure it's stored. Persist it if newly created
-
-     const response = await fetch('http://localhost:4000/api/chat', {
-       method: 'POST',
-       headers: {
-        'Content-Type': 'application/json',
-        'sessionid': sessionId
-       },
-       body: JSON.stringify({ message: input }),
-    });
+      const response = await fetch('http://localhost:4000/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'sessionid': sessionId,
+          'Authorization': `Bearer ${token}`, // ✅ Include token for authentication
+        },
+        body: JSON.stringify({ message: input }),
+      });
 
       const data = await response.json();
 
-      // Add AI response to chat
       const aiMessage = {
         id: Date.now() + 1,
         text: data.message,
         sender: 'ai',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
-      setMessages(prevMessages => [...prevMessages, aiMessage]);
+
+      setMessages((prev) => [...prev, aiMessage]);
     } catch (error) {
       console.error('Error sending message:', error);
-      // Add error message to chat
-      const errorMessage = {
-        id: Date.now() + 1,
-        text: 'Sorry, I encountered an error. Please try again later.',
-        sender: 'ai',
-        timestamp: new Date().toISOString()
-      };
-      setMessages(prevMessages => [...prevMessages, errorMessage]);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: Date.now() + 2,
+          text: 'Sorry, something went wrong. Please try again later.',
+          sender: 'ai',
+          timestamp: new Date().toISOString(),
+        },
+      ]);
     } finally {
       setIsLoading(false);
     }
   };
 
+  // ✅ Ensure auth check is done before rendering
+  if (!authChecked) return null;
+
   return (
+  <div className={styles.chatWrapper}>
     <div className={styles.chatContainer}>
       <div className={styles.messagesContainer}>
-        {messages.map(msg => (
-          <div 
-            key={msg.id} 
+        {messages?.map((msg) => (
+          <div
+            key={msg._id || msg.id}
             className={`${styles.message} ${
               msg.sender === 'user' ? styles.userMessage : styles.aiMessage
             }`}
@@ -115,6 +137,7 @@ export default function ChatInterface() {
             </div>
           </div>
         ))}
+
         {isLoading && (
           <div className={`${styles.message} ${styles.aiMessage}`}>
             <div className={styles.typingIndicator}>
@@ -126,6 +149,7 @@ export default function ChatInterface() {
         )}
         <div ref={messagesEndRef} />
       </div>
+
       <form onSubmit={handleSendMessage} className={styles.inputContainer}>
         <input
           type="text"
@@ -139,5 +163,6 @@ export default function ChatInterface() {
         </button>
       </form>
     </div>
-  );
+  </div>
+);
 }
