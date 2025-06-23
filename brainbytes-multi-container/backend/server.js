@@ -1,7 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 const { MongoClient, ObjectId } = require('mongodb');
-const axios = require('axios'); // Reserved for future external API calls (e.g., real AI)
 
 const app = express();
 const PORT = process.env.PORT || 4000;
