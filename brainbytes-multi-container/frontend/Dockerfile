@@ -5,6 +5,6 @@ COPY package*.json ./
 RUN npm install
 COPY . .
 
-ENV HOST 0.0.0.0
+ENV HOST=http://localhost:4000
 EXPOSE 3000
 CMD ["npm", "run", "dev"]
