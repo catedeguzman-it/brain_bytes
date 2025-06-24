@@ -1,0 +1,34 @@
+name: Dockerfile Lint + Image Validation
+
+on:
+  push:
+    branches: [main, development]
+  pull_request:
+    branches: [main, development]
+
+jobs:
+  lint-dockerfiles:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Lint Frontend Dockerfile
+        run: docker run --rm -i hadolint/hadolint < frontend/Dockerfile
+
+      - name: Lint Backend Dockerfile
+        run: docker run --rm -i hadolint/hadolint < backend/Dockerfile
+
+  validate-backend-image:
+    runs-on: ubuntu-latest
+    needs: lint-dockerfiles
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build backend image
+        run: docker build -t brainbytes-backend:test ./backend
+
+      - name: List contents of /app
+        run: docker run --rm brainbytes-backend:test ls -la /app
+
+      - name: Check Node.js version
+        run: docker run --rm brainbytes-backend:test node -v
