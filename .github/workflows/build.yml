@@ -1,0 +1,60 @@
+name: BrainBytes Docker Build
+
+on:
+  push:
+    branches: [ main, development ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build Docker Images
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Check out your repository
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      # 2. Set up Docker Buildx (latest major version is v3)
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # 3. Build the frontend image (docker/build-push-action v4)
+      - name: Build frontend image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./frontend
+          push: false
+          tags: brainbytes/frontend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # 4. Build the backend image (docker/build-push-action v4)
+      - name: Build backend image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./backend
+          push: false
+          tags: brainbytes/backend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # 5. (Optional) Install Docker Compose if the runner lacks it
+      - name: Install Docker Compose
+        run: |
+          sudo apt-get update
+          sudo apt-get remove -y docker-compose || true
+          sudo curl -L "https://github.com/docker/compose/releases/download/v2.17.2/docker-compose-linux-x86_64" -o /usr/local/bin/docker-compose
+          sudo chmod +x /usr/local/bin/docker-compose
+          docker-compose --version
+
+      # 6. Test Docker Compose
+      - name: Test Docker Compose
+        run: |
+          docker-compose -f docker-compose.yml up -d
+          docker-compose ps
+          docker-compose down
+
