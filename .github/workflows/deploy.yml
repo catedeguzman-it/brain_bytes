@@ -1,0 +1,41 @@
+# .github/workflows/deploy.yml
+name: BrainBytes Deploy
+
+on:
+  push:
+    branches: [main, development]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy to Test Environment
+    runs-on: ubuntu-latest
+
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v2
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      - name: Build Docker images
+        run: docker-compose build
+
+      - name: Prepare deployment
+        run: |
+          echo "DEPLOY_TIME=$(date)" >> $GITHUB_ENV
+          echo "DEPLOY_SHA=${{ github.sha }}" >> $GITHUB_ENV
+
+      - name: Deploy to test environment
+        run: |
+          echo "Deploying to test environment..."
+          echo "This is a placeholder for your actual deployment script"
+          echo "In future weeks, this will deploy to Oracle Cloud"
+
+      - name: Verify deployment
+        run: |
+          echo "Verifying deployment..."
+          curl -s http://localhost:3000/health || echo "Service not available yet"
