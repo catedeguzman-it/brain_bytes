@@ -1,0 +1,17 @@
+# Don't copy node_modules into the Docker image
+node_modules
+
+# Ignore logs and sensitive files
+npm-debug.log
+.env
+*.log
+
+# Ignore version control and IDE settings
+.git
+.gitignore
+.vscode
+.idea
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
