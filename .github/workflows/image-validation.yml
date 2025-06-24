@@ -32,3 +32,19 @@ jobs:
 
       - name: Check Node.js version
         run: docker run --rm brainbytes-backend:test node -v
+
+
+  validate-frontend-image:
+    runs-on: ubuntu-latest
+    needs: lint-dockerfiles
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build frontend image
+        run: docker build -t brainbytes-frontend:test ./frontend
+
+      - name: List contents of /app
+        run: docker run --rm brainbytes-frontend:test ls -la /app
+
+      - name: Check Node.js version
+        run: docker run --rm brainbytes-frontend:test node -v
