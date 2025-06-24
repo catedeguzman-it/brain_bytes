@@ -19,13 +19,13 @@ services:
     env_file:
       - .env
     depends_on:
-      - mongodb
+      - mongo
     networks:
       - brainbytes-network
     restart: unless-stopped
 
 
-  mongodb:
+  mongo:
     image: mongo:4.4
     ports:
       - "27018:27017"
