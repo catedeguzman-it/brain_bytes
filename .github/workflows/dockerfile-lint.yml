@@ -15,11 +15,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install Hadolint
+      - name: Download and install Hadolint
         run: |
-          wget -O hadolint https://github.com/hadolint/hadolint/releases/latest/download/hadolint-Linux-x86_64
+          curl -sSL https://github.com/hadolint/hadolint/releases/latest/download/hadolint-Linux-x86_64 -o hadolint
           chmod +x hadolint
-          sudo mv hadolint /usr/local/bin/
+          sudo mv hadolint /usr/local/bin/hadolint
 
       - name: Lint frontend/Dockerfile
         run: hadolint frontend/Dockerfile
