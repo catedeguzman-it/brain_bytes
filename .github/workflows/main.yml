@@ -7,7 +7,7 @@ on:
   pull_request:
 
 jobs:
-  brainbytes-ci:
+  brainbytes-ci_cd:
     runs-on: ubuntu-latest
 
     services:
