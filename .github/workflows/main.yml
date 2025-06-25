@@ -193,7 +193,7 @@ jobs:
         run: |
           for i in {1..15}; do
           echo "Attempt $i: Checking backend..."
-          if curl --fail http://localhost:4000/health; then
+          if curl --fail http://backend:4000/health; then
           echo "✅ Backend is ready"
           exit 0
           fi

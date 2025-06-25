@@ -6,8 +6,7 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 
 # Pin dev dependency and production dependency versions in one layer
-RUN npm install express@4.18.2 && \
-    npm install --save-dev nodemon@3.1.0
+RUN npm install
 
 # Copy the rest of the source files
 COPY . .
