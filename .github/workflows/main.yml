@@ -152,6 +152,11 @@ jobs:
       - name: 🧱 Build backend Docker image
         run: docker build -t brainbytes-backend brainbytes-multi-container/backend
 
+      - name: 📦 Check if build output exists
+        run: |
+          ls -la brainbytes-multi-container/frontend/.next || echo "❌ Frontend build missing"
+          ls -la brainbytes-multi-container/backend/dist || echo "❌ Backend build missing"
+
       - name: Save build artifacts
         uses: actions/upload-artifact@v4
         with:
