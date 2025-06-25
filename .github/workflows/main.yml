@@ -38,19 +38,19 @@ jobs:
           node-version: '18'
 
       - name: 📦 Install frontend dependencies
-        working-directory: frontend
+        working-directory: brainbytes-multi-container/frontend
         run: npm ci
 
       - name: 🔍 Lint frontend
-        working-directory: frontend
+        working-directory: brainbytes-multi-container/frontend
         run: npm run lint || echo "Frontend lint failed but continuing"
 
       - name: 📦 Install backend dependencies
-        working-directory: backend
+        working-directory: brainbytes-multi-container/backend
         run: npm ci
 
       - name: 🔍 Lint backend
-        working-directory: backend
+        working-directory: brainbytes-multi-container/backend
         run: npm run lint || echo "Backend lint failed but continuing"
 
       - name: Run ESLint
@@ -98,11 +98,11 @@ jobs:
           node-version: ${{ matrix.node-version }}
 
       - name: 📦 Install frontend dependencies
-        working-directory: frontend
+        working-directory: brainbytes-multi-container/frontend
         run: npm ci
 
       - name: 🧪 Frontend Tests
-        working-directory: frontend
+        working-directory: brainbytes-multi-container/frontend
         run: |
           if [ -f "package.json" ] && grep -q "\"test\":" package.json; then
             npm test
@@ -111,11 +111,11 @@ jobs:
           fi
 
       - name: 📦 Install backend dependencies
-        working-directory: backend
+        working-directory: brainbytes-multi-container/backend
         run: npm ci
 
       - name: 🧪 Backend Tests with Coverage
-        working-directory: backend
+        working-directory: brainbytes-multi-container/backend
         run: npm run test:coverage
 
       - name: Upload coverage reports
@@ -123,8 +123,8 @@ jobs:
         with:
           name: coverage-reports
           path: |
-            backend/coverage
-            frontend/coverage
+            brainbytes-multi-container/backend/coverage
+            brainbytes-multi-container/frontend/coverage
 
       - name: Check for vulnerabilities
         run: npm audit --json || true
