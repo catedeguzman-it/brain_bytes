@@ -157,7 +157,7 @@ jobs:
         with:
           name: build-outputs
           path: |
-            brainbytes-multi-container/frontend/build
+            brainbytes-multi-container/frontend/.next
             brainbytes-multi-container/backend/dist
 
   integration-test:
