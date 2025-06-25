@@ -7,12 +7,10 @@ on:
     branches: [ main, development ]
   workflow_dispatch:
 
-
 permissions:
   contents: read
   pull-requests: write
 
-  
 jobs:
   lint:
     name: 🧼 Lint Code
@@ -44,26 +42,27 @@ jobs:
           node-version: '18'
 
       - name: 📦 Install frontend dependencies
-        working-directory: brainbytes-multi-container/frontend
+        working-directory: frontend
         run: npm ci
 
       - name: 🔍 Lint frontend
-        working-directory: brainbytes-multi-container/frontend
+        working-directory: frontend
         run: npm run lint || echo "Frontend lint failed but continuing"
 
       - name: 📦 Install backend dependencies
-        working-directory: brainbytes-multi-container/backend
+        working-directory: backend
         run: npm ci
 
       - name: 🔍 Lint backend
-        working-directory: brainbytes-multi-container/backend
+        working-directory: backend
         run: npm run lint || echo "Backend lint failed but continuing"
 
-      - name: Run ESLint
+      - name: Run ESLint (merge report)
         run: |
           npm run lint:js -- --format json --output-file eslint-report.json || true
 
-      - name: Annotate ESLint results
+      - name: Annotate ESLint results (PR only)
+        if: github.event_name == 'pull_request'
         uses: ataylorme/eslint-annotate-action@v2
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
@@ -104,11 +103,11 @@ jobs:
           node-version: ${{ matrix.node-version }}
 
       - name: 📦 Install frontend dependencies
-        working-directory: brainbytes-multi-container/frontend
+        working-directory: frontend
         run: npm ci
 
       - name: 🧪 Frontend Tests
-        working-directory: brainbytes-multi-container/frontend
+        working-directory: frontend
         run: |
           if [ -f "package.json" ] && grep -q "\"test\":" package.json; then
             npm test
@@ -117,11 +116,11 @@ jobs:
           fi
 
       - name: 📦 Install backend dependencies
-        working-directory: brainbytes-multi-container/backend
+        working-directory: backend
         run: npm ci
 
       - name: 🧪 Backend Tests with Coverage
-        working-directory: brainbytes-multi-container/backend
+        working-directory: backend
         run: npm run test:coverage
 
       - name: Upload coverage reports
@@ -129,10 +128,10 @@ jobs:
         with:
           name: coverage-reports
           path: |
-            brainbytes-multi-container/backend/coverage
-            brainbytes-multi-container/frontend/coverage
+            backend/coverage
+            frontend/coverage
 
-      - name: Check for vulnerabilities
+      - name: 🔍 Check for vulnerabilities
         run: npm audit --json || true
 
   build:
@@ -153,10 +152,10 @@ jobs:
             ${{ runner.os }}-buildx-
 
       - name: 🧱 Build frontend Docker image
-        run: docker build -t brainbytes-frontend ./frontend
+        run: docker build -t brainbytes-frontend frontend
 
       - name: 🧱 Build backend Docker image
-        run: docker build -t brainbytes-backend ./backend
+        run: docker build -t brainbytes-backend backend
 
       - name: Save build artifacts
         uses: actions/upload-artifact@v2
