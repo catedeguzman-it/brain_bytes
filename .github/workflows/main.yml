@@ -171,7 +171,8 @@ jobs:
         run: |
           echo "MONGO_URI=${{ secrets.MONGO_URI }}" >> .env
           echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
-          echo "FIREBASE_API_KEY=${{ secrets.FIREBASE_API_KEY }}" >> .env
+          echo "HUGGINGFACE_TOKEN=${{ secrets.HUGGINGFACE_TOKEN }}" >> .env
+          echo "PORT=4000" >> .env
           echo "HF_API_KEY=${{ secrets.HF_API_KEY }}" >> .env
 
       - name: 🐳 Start Docker Compose
