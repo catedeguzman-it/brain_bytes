@@ -23,6 +23,9 @@ app.use(express.json());
 app.use('/api', authRoutes);
 app.use('/api', chatRoutes);
 
+// ✅ Add this health check route
+app.get('/health', (req, res) => res.send('OK'));
+
 // ───────────────────────
 // START SERVER
 // ───────────────────────
