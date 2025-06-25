@@ -16,6 +16,11 @@ services:
       - "4000:4000"
     env_file:
       - .env
+    environment:
+      - MONGO_URI=${MONGO_URI}
+      - JWT_SECRET=${JWT_SECRET}
+      - HUGGINGFACE_TOKEN=${HUGGINGFACE_TOKEN}
+      - PORT=${PORT}
     depends_on:
       - mongodb
     networks:
