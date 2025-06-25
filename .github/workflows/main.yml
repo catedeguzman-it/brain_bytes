@@ -38,7 +38,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: '18'
-          cache: 'false'
+         
 
       - name: 📦 Install frontend dependencies
         working-directory: brainbytes-multi-container/frontend
@@ -102,7 +102,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'false'
+          
 
       - name: 📦 Install frontend dependencies
         working-directory: brainbytes-multi-container/frontend
