@@ -186,13 +186,8 @@ jobs:
         run: npx playwright install --with-deps
 
       - name: ✅ Check Backend Health
-        run: |
-          for i in {1..10}; do
-          curl --fail http://localhost:4000/health && break
-          echo "Retrying in 3s..."
-          sleep 3
-          done || (echo "❌ Backend failed to start" && exit 1)
-
+        run: curl --fail http://localhost:4000/health || (echo "❌ Backend health check failed" && exit 1)
+        
       - name: ✅ Check Frontend Health
         run: curl --fail http://localhost:3000 || (echo "❌ Frontend health check failed" && exit 1)
 
