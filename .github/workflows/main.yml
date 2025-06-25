@@ -146,6 +146,18 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-buildx-      
 
+      - name: 🛠️ Build frontend app
+        working-directory: brainbytes-multi-container/frontend
+        run: |
+          npm install
+          npm run build
+
+      - name: 🛠️ Build backend app
+        working-directory: brainbytes-multi-container/backend
+        run: |
+          npm install
+          npm run build || echo "⚠️ No backend build script defined"
+
       - name: 🧱 Build frontend Docker image
         run: docker build -t brainbytes-frontend brainbytes-multi-container/frontend
 
