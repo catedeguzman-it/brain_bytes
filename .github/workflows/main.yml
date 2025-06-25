@@ -135,4 +135,4 @@ jobs:
 
       - name: 🧹 Tear Down
         working-directory: brainbytes-multi-container
-        run: docker-compose down
+        run: docker compose down
