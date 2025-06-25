@@ -1,4 +1,4 @@
-FROM node:18
+FROM node:20.17.0
 
 WORKDIR /usr/src/app
 
@@ -14,4 +14,6 @@ COPY . .
 
 EXPOSE 4000
 
-CMD ["npm", "run", "dev"]
+
+# Start backend in production mode
+CMD ["node", "server.js"]
