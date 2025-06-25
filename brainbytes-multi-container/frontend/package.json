@@ -9,7 +9,7 @@
     "test": "jest --config=jest.config.js",
     "test:watch": "jest --config=jest.config.js --watch",
     "lint": "eslint"
-    
+
   },
   "dependencies": {
     "axios": "^1.10.0",
