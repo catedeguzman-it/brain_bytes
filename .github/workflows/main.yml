@@ -16,14 +16,22 @@ jobs:
       - name: 📥 Checkout code
         uses: actions/checkout@v3
 
-      - name: Cache Node.js dependencies
+      - name: Cache frontend Node.js dependencies
         uses: actions/cache@v3
         with:
-          path: |
-            **/node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          path: frontend/node_modules
+          key: ${{ runner.os }}-frontend-node-${{ hashFiles('frontend/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-node-
+            ${{ runner.os }}-frontend-node-
+
+      - name: Cache backend Node.js dependencies
+        uses: actions/cache@v3
+        with:
+          path: backend/node_modules
+          key: ${{ runner.os }}-backend-node-${{ hashFiles('backend/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-backend-node-
+
 
       - name: ⚙️ Set up Node.js
         uses: actions/setup-node@v3
@@ -70,14 +78,21 @@ jobs:
       - name: 📥 Checkout code
         uses: actions/checkout@v3
 
-      - name: Cache Node.js dependencies
+      - name: Cache frontend Node.js dependencies
         uses: actions/cache@v3
         with:
-          path: |
-            **/node_modules
-          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          path: frontend/node_modules
+          key: ${{ runner.os }}-frontend-node-${{ hashFiles('frontend/package-lock.json') }}
           restore-keys: |
-            ${{ runner.os }}-node-
+            ${{ runner.os }}-frontend-node-
+
+      - name: Cache backend Node.js dependencies
+        uses: actions/cache@v3
+        with:
+          path: backend/node_modules
+          key: ${{ runner.os }}-backend-node-${{ hashFiles('backend/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-backend-node-
 
       - name: ⚙️ Set up Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v2
