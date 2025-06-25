@@ -25,7 +25,23 @@ jobs:
         with:
           node-version: '20.17.0'
 
-      - name: 📦 Install frontend dependencies
+      - name: ♻️ Cache frontend node_modules
+        uses: actions/cache@v3
+        with:
+          path: brainbytes-multi-container/frontend/node_modules
+          key: ${{ runner.os }}-frontend-${{ hashFiles('brainbytes-multi-container/frontend/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-frontend-
+
+      - name: ♻️ Cache backend node_modules
+        uses: actions/cache@v3
+        with:
+          path: brainbytes-multi-container/backend/node_modules
+          key: ${{ runner.os }}-backend-${{ hashFiles('brainbytes-multi-container/backend/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-backend-
+
+      - name: 📦 Install frontend deps
         working-directory: brainbytes-multi-container/frontend
         run: npm install
 
@@ -33,7 +49,7 @@ jobs:
         working-directory: brainbytes-multi-container/frontend
         run: npm run lint || echo "⚠️ Frontend lint failed"
 
-      - name: 📦 Install backend dependencies
+      - name: 📦 Install backend deps
         working-directory: brainbytes-multi-container/backend
         run: npm install
 
@@ -42,7 +58,7 @@ jobs:
         run: npm run lint || echo "⚠️ Backend lint failed"
 
   test:
-    name: 🧪 Run Unit Tests
+    name: 🧪 Unit Tests
     needs: lint
     runs-on: ubuntu-latest
 
@@ -55,7 +71,13 @@ jobs:
         with:
           node-version: '20.17.0'
 
-      - name: 📦 Install frontend dependencies
+      - name: ♻️ Restore frontend node_modules
+        uses: actions/cache@v3
+        with:
+          path: brainbytes-multi-container/frontend/node_modules
+          key: ${{ runner.os }}-frontend-${{ hashFiles('brainbytes-multi-container/frontend/package-lock.json') }}
+
+      - name: 📦 Install frontend deps
         working-directory: brainbytes-multi-container/frontend
         run: npm install
 
@@ -68,7 +90,13 @@ jobs:
             echo "⚠️ No frontend tests defined. Skipping..."
           fi
 
-      - name: 📦 Install backend dependencies
+      - name: ♻️ Restore backend node_modules
+        uses: actions/cache@v3
+        with:
+          path: brainbytes-multi-container/backend/node_modules
+          key: ${{ runner.os }}-backend-${{ hashFiles('brainbytes-multi-container/backend/package-lock.json') }}
+
+      - name: 📦 Install backend deps
         working-directory: brainbytes-multi-container/backend
         run: npm install
 
@@ -82,7 +110,7 @@ jobs:
           fi
 
   integration-test:
-    name: 🔁 Integration Test with Compose
+    name: 🔁 Integration Test with Docker Compose
     needs: test
     runs-on: ubuntu-latest
 
@@ -96,11 +124,36 @@ jobs:
       - name: 📥 Checkout code
         uses: actions/checkout@v3
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20.17.0'
+
+      - name: ♻️ Restore frontend node_modules
+        uses: actions/cache@v3
+        with:
+          path: brainbytes-multi-container/frontend/node_modules
+          key: ${{ runner.os }}-frontend-${{ hashFiles('brainbytes-multi-container/frontend/package-lock.json') }}
+
+      - name: ♻️ Cache Next.js build cache
+        uses: actions/cache@v3
+        with:
+          path: brainbytes-multi-container/frontend/.next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('brainbytes-multi-container/frontend/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-
+
       - name: ⚙️ Build frontend
         working-directory: brainbytes-multi-container/frontend
         run: |
           npm install
           npm run build || echo "⚠️ No frontend build script defined"
+
+      - name: ♻️ Restore backend node_modules
+        uses: actions/cache@v3
+        with:
+          path: brainbytes-multi-container/backend/node_modules
+          key: ${{ runner.os }}-backend-${{ hashFiles('brainbytes-multi-container/backend/package-lock.json') }}
 
       - name: ⚙️ Build backend
         working-directory: brainbytes-multi-container/backend
@@ -108,7 +161,7 @@ jobs:
           npm install
           npm run build || echo "⚠️ No backend build script defined"
 
-      - name: 🐳 Check Docker & Compose Version
+      - name: 🐳 Check Docker Versions
         run: |
           docker --version
           docker compose version
@@ -119,7 +172,7 @@ jobs:
           docker compose up -d --build
           sleep 20
 
-      - name: Install Playwright browsers
+      - name: 🧭 Install Playwright Browsers
         working-directory: brainbytes-multi-container
         run: npx playwright install --with-deps
 
@@ -129,10 +182,10 @@ jobs:
       - name: ✅ Check Frontend Health
         run: curl --fail http://localhost:3000 || (echo "❌ Frontend health check failed" && exit 1)
 
-      - name: Run E2E tests
+      - name: 🧪 Run E2E Tests
         working-directory: brainbytes-multi-container/e2e-tests
         run: npm run test:e2e
 
-      - name: 🧹 Tear Down
+      - name: 🧹 Tear Down Docker
         working-directory: brainbytes-multi-container
         run: docker compose down
