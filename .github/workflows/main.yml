@@ -144,15 +144,7 @@ jobs:
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-buildx-
-      
-      - name: ⚙️ Build frontend
-        working-directory: brainbytes-multi-container/frontend
-        run: npm run build
-
-      - name: ⚙️ (Optional) Build backend if needed
-        working-directory: brainbytes-multi-container/backend
-        run: npm run build || echo "No backend build step"
+            ${{ runner.os }}-buildx-      
 
       - name: 🧱 Build frontend Docker image
         run: docker build -t brainbytes-frontend brainbytes-multi-container/frontend
