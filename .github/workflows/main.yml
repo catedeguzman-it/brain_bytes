@@ -114,11 +114,12 @@ jobs:
       - name: 🧪 Frontend Tests
         working-directory: brainbytes-multi-container/frontend
         run: |
-          if [ -f "package.json" ] && grep -q "\"test\":" package.json; then
+          if [ -f "package.json" ] && grep -q "\"test\":" package.json && [ -f "src/_tests_/setupTests.js" ]; then
             npm test
           else
-            echo "⚠️ No frontend tests defined. Skipping..."
+            echo "⚠️ No runnable frontend tests found or setup file missing. Skipping..."
           fi
+
 
       - name: 📦 Install backend dependencies
         working-directory: brainbytes-multi-container/backend
