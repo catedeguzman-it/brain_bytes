@@ -6,7 +6,9 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "setup": "node setup.js"
+    "setup": "node setup.js",
+    "lint": "eslint ."
+    
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
