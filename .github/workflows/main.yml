@@ -203,7 +203,7 @@ jobs:
           exit 1
 
       - name: ✅ Check Frontend Health
-        run: curl --fail http://localhost:3000 || (echo "❌ Frontend health check failed" && exit 1)
+        run: curl --fail http://frontend:3000 || (echo "❌ Frontend health check failed" && exit 1)
 
       - name: 🧪 Run E2E Tests
         working-directory: brainbytes-multi-container/e2e-tests
