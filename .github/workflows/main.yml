@@ -19,6 +19,8 @@ jobs:
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v3
+        with:
+          path: brainbytes-multi-container
 
       - name: Cache frontend Node.js dependencies
         uses: actions/cache@v3
@@ -81,6 +83,8 @@ jobs:
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v3
+        with:
+          path: brainbytes-multi-container
 
       - name: Cache frontend Node.js dependencies
         uses: actions/cache@v3
@@ -144,6 +148,8 @@ jobs:
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v3
+        with:
+          path: brainbytes-multi-container
 
       - name: Cache Docker layers
         uses: actions/cache@v3
@@ -186,6 +192,8 @@ jobs:
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v3
+        with:
+          path: brainbytes-multi-container
 
       - name: Download build artifacts
         uses: actions/download-artifact@v2
