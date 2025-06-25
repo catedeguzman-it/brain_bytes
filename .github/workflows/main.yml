@@ -15,23 +15,24 @@ jobs:
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v3
+        with:
+          path: brainbytes-multi-container
 
       - name: Cache frontend Node.js dependencies
         uses: actions/cache@v3
         with:
-          path: frontend/node_modules
-          key: ${{ runner.os }}-frontend-node-${{ hashFiles('frontend/package-lock.json') }}
+          path: brainbytes-multi-container/frontend/node_modules
+          key: ${{ runner.os }}-frontend-node-${{ hashFiles('brainbytes-multi-container/frontend/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-frontend-node-
 
       - name: Cache backend Node.js dependencies
         uses: actions/cache@v3
         with:
-          path: backend/node_modules
-          key: ${{ runner.os }}-backend-node-${{ hashFiles('backend/package-lock.json') }}
+          path: brainbytes-multi-container/backend/node_modules
+          key: ${{ runner.os }}-backend-node-${{ hashFiles('brainbytes-multi-container/backend/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-backend-node-
-
 
       - name: ⚙️ Set up Node.js
         uses: actions/setup-node@v3
@@ -40,22 +41,23 @@ jobs:
           cache: 'npm'
 
       - name: 📦 Install frontend dependencies
-        working-directory: ./frontend
+        working-directory: brainbytes-multi-container/frontend
         run: npm ci
 
       - name: 🔍 Lint frontend
-        working-directory: ./frontend
+        working-directory: brainbytes-multi-container/frontend
         run: npm run lint || echo "Frontend lint failed but continuing"
 
       - name: 📦 Install backend dependencies
-        working-directory: ./backend
+        working-directory: brainbytes-multi-container/backend
         run: npm ci
 
       - name: 🔍 Lint backend
-        working-directory: ./backend
+        working-directory: brainbytes-multi-container/backend
         run: npm run lint || echo "Backend lint failed but continuing"
 
       - name: Run ESLint
+        working-directory: brainbytes-multi-container
         run: |
           npm run lint:js -- --format json --output-file eslint-report.json || true
 
@@ -63,7 +65,7 @@ jobs:
         uses: ataylorme/eslint-annotate-action@v2
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
-          report-json: "eslint-report.json"
+          report-json: "brainbytes-multi-container/eslint-report.json"
 
   test:
     name: 🧪 Run Unit Tests
@@ -77,20 +79,22 @@ jobs:
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v3
+        with:
+          path: brainbytes-multi-container
 
       - name: Cache frontend Node.js dependencies
         uses: actions/cache@v3
         with:
-          path: frontend/node_modules
-          key: ${{ runner.os }}-frontend-node-${{ hashFiles('frontend/package-lock.json') }}
+          path: brainbytes-multi-container/frontend/node_modules
+          key: ${{ runner.os }}-frontend-node-${{ hashFiles('brainbytes-multi-container/frontend/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-frontend-node-
 
       - name: Cache backend Node.js dependencies
         uses: actions/cache@v3
         with:
-          path: backend/node_modules
-          key: ${{ runner.os }}-backend-node-${{ hashFiles('backend/package-lock.json') }}
+          path: brainbytes-multi-container/backend/node_modules
+          key: ${{ runner.os }}-backend-node-${{ hashFiles('brainbytes-multi-container/backend/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-backend-node-
 
@@ -100,11 +104,11 @@ jobs:
           node-version: ${{ matrix.node-version }}
 
       - name: 📦 Install frontend dependencies
-        working-directory: ./frontend
+        working-directory: brainbytes-multi-container/frontend
         run: npm ci
 
       - name: 🧪 Frontend Tests
-        working-directory: ./frontend
+        working-directory: brainbytes-multi-container/frontend
         run: |
           if [ -f "package.json" ] && grep -q "\"test\":" package.json; then
             npm test
@@ -113,11 +117,11 @@ jobs:
           fi
 
       - name: 📦 Install backend dependencies
-        working-directory: ./backend
+        working-directory: brainbytes-multi-container/backend
         run: npm ci
 
       - name: 🧪 Backend Tests with Coverage
-        working-directory: ./backend
+        working-directory: brainbytes-multi-container/backend
         run: npm run test:coverage
 
       - name: Upload coverage reports
@@ -125,10 +129,11 @@ jobs:
         with:
           name: coverage-reports
           path: |
-            backend/coverage
-            frontend/coverage
+            brainbytes-multi-container/backend/coverage
+            brainbytes-multi-container/frontend/coverage
 
       - name: Check for vulnerabilities
+        working-directory: brainbytes-multi-container
         run: npm audit --json || true
 
   build:
@@ -139,6 +144,8 @@ jobs:
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v3
+        with:
+          path: brainbytes-multi-container
 
       - name: Cache Docker layers
         uses: actions/cache@v3
@@ -149,18 +156,18 @@ jobs:
             ${{ runner.os }}-buildx-
 
       - name: 🧱 Build frontend Docker image
-        run: docker build -t brainbytes-frontend ./frontend
+        run: docker build -t brainbytes-frontend brainbytes-multi-container/frontend
 
       - name: 🧱 Build backend Docker image
-        run: docker build -t brainbytes-backend ./backend
+        run: docker build -t brainbytes-backend brainbytes-multi-container/backend
 
       - name: Save build artifacts
         uses: actions/upload-artifact@v2
         with:
           name: build-outputs
           path: |
-            frontend/build
-            backend/dist
+            brainbytes-multi-container/frontend/build
+            brainbytes-multi-container/backend/dist
 
   integration-test:
     name: 🔁 Integration Test with Compose
@@ -181,6 +188,8 @@ jobs:
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v3
+        with:
+          path: brainbytes-multi-container
 
       - name: Download build artifacts
         uses: actions/download-artifact@v2
@@ -188,11 +197,13 @@ jobs:
           name: build-outputs
 
       - name: ⚙️ Set up Docker Compose
+        working-directory: brainbytes-multi-container
         run: |
           docker-compose -f docker-compose.yml up -d --build
           sleep 20
 
       - name: Install Playwright browsers
+        working-directory: brainbytes-multi-container
         run: npx playwright install --with-deps
 
       - name: ✅ Check Backend Health
@@ -204,8 +215,9 @@ jobs:
           curl --fail http://localhost:3000 || (echo "❌ Frontend health check failed" && exit 1)
 
       - name: Run E2E tests
-        working-directory: ./e2e-tests
+        working-directory: brainbytes-multi-container/e2e-tests
         run: npm run test:e2e
 
       - name: 🧹 Tear Down
+        working-directory: brainbytes-multi-container
         run: docker-compose down
