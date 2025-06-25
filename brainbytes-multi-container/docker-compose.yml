@@ -20,7 +20,7 @@ services:
       - MONGO_URI=${MONGO_URI}
       - JWT_SECRET=${JWT_SECRET}
       - HUGGINGFACE_TOKEN=${HUGGINGFACE_TOKEN}
-      - PORT=${PORT}
+      - PORT=4000
     depends_on:
       - mongodb
     networks:
