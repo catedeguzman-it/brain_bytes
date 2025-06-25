@@ -64,10 +64,11 @@ jobs:
 
       - name: Annotate ESLint results (PR only)
         if: github.event_name == 'pull_request'
-        uses: ataylorme/eslint-annotate-action@v2
-        with:
-          repo-token: "${{ secrets.GITHUB_TOKEN }}"
-          report-json: "brainbytes-multi-container/eslint-report.json"
+        uses: github/super-linter@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VALIDATE_JAVASCRIPT_ES: true
+          LINTER_RULES_PATH: brainbytes-multi-container/.eslintrc.json
 
   test:
     name: 🧪 Run Unit Tests
