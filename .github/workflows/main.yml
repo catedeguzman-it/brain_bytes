@@ -36,13 +36,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-backend-node-
 
-      - name: ⬆️ Use Node.js 20 (required for npm@11+)
+      - name: ⚙️ Set up Node.js 18
         uses: actions/setup-node@v3
         with:
-          node-version: '20.17.0'
+          node-version: '18.20.0'  # or simply '18'
 
-      - name: ⬆️ Upgrade npm
-        run: npm install -g npm@latest
+      - name: ✅ Use compatible npm for Node 18
+        run: npm install -g npm@10.8.2
 
       - name: 📦 Install frontend dependencies
         working-directory: brainbytes-multi-container/frontend
