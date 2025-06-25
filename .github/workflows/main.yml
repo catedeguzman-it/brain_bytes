@@ -192,10 +192,11 @@ jobs:
       - name: ✅ Check Backend Health
         run: |
           for i in {1..15}; do
-          if curl http://localhost:4000/health; then
+          echo "Attempt $i: Checking backend..."
+          if curl --fail http://localhost:4000/health; then
+          echo "✅ Backend is ready"
           exit 0
           fi
-          echo "Waiting for backend..."
           sleep 5
           done
           echo "❌ Backend did not become ready in time"
