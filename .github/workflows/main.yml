@@ -108,10 +108,15 @@ jobs:
           npm install
           npm run build || echo "⚠️ No backend build script defined"
 
+      - name: 🐳 Check Docker & Compose Version
+        run: |
+          docker --version
+          docker compose version
+
       - name: 🐳 Start Docker Compose
         working-directory: brainbytes-multi-container
         run: |
-          docker-compose up -d --build
+          docker compose up -d --build
           sleep 20
 
       - name: Install Playwright browsers
