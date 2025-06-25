@@ -7,6 +7,7 @@ const MONGO_URI = process.env.MONGO_URI || 'mongodb://mongodb:27017/brainbytes';
 let db;
 
 async function connectToDatabase() {
+  const client = await MongoClient.connect(MONGO_URI);
   db = client.db();
   console.log("🔎 MONGO_URI:", process.env.MONGO_URI);
   console.log('✅ Connected to MongoDB');
