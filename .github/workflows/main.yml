@@ -36,10 +36,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-backend-node-
 
-      - name: ⚙️ Setup Node.js
+      - name: ⬆️ Use Node.js 20 (required for npm@11+)
         uses: actions/setup-node@v3
         with:
-          node-version: '18'  # or 20
+          node-version: '20.17.0'
 
       - name: ⬆️ Upgrade npm
         run: npm install -g npm@latest
