@@ -24,7 +24,7 @@ services:
     networks:
       - brainbytes-network
     restart: unless-stopped
-
+    command: ["npm", "start"]  
 
   mongodb:
     image: mongo:4.4
