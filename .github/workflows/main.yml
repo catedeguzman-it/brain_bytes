@@ -165,6 +165,14 @@ jobs:
         run: |
           docker --version
           docker compose version
+        
+      - name: 📝 Generate .env from secrets
+        working-directory: brainbytes-multi-container
+        run: |
+          echo "MONGO_URI=${{ secrets.MONGO_URI }}" >> .env
+          echo "JWT_SECRET=${{ secrets.JWT_SECRET }}" >> .env
+          echo "FIREBASE_API_KEY=${{ secrets.FIREBASE_API_KEY }}" >> .env
+          echo "HF_API_KEY=${{ secrets.HF_API_KEY }}" >> .env
 
       - name: 🐳 Start Docker Compose
         working-directory: brainbytes-multi-container
