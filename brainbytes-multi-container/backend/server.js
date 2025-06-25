@@ -24,7 +24,7 @@ app.use('/api', authRoutes);
 app.use('/api', chatRoutes);
 
 // ──────── HEALTH CHECK ────────
-app.get('/health', (req, res) => res.status(200).send('OK'));
+app.get('/health', (req, res) => res.send('OK'));
 
 // ───────────────────────
 // START SERVER
