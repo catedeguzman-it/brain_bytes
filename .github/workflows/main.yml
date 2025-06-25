@@ -7,6 +7,12 @@ on:
     branches: [ main, development ]
   workflow_dispatch:
 
+
+permissions:
+  contents: read
+  pull-requests: write
+
+  
 jobs:
   lint:
     name: 🧼 Lint Code
