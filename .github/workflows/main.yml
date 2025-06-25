@@ -181,9 +181,12 @@ jobs:
           docker compose up -d --build
           sleep 20
 
-      - name: 🧾 Debug Backend Logs
+      - name: 🧾 Debug Backend Logs (Full)
         working-directory: brainbytes-multi-container
-        run: docker compose logs backend
+        run: |
+          docker compose ps
+          docker compose logs backend
+          docker compose exec backend cat server.js || true
 
       - name: 🧭 Install Playwright Browsers
         working-directory: brainbytes-multi-container
