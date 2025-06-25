@@ -8,6 +8,7 @@ let db;
 
 async function connectToDatabase() {
   db = client.db();
+  console.log("🔎 MONGO_URI:", process.env.MONGO_URI);
   console.log('✅ Connected to MongoDB');
   return db;
 }

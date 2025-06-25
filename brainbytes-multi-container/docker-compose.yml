@@ -15,9 +15,9 @@ services:
     ports:
       - "4000:4000"
     environment:
-      - MONGO_URI=${MONGO_URI}
       - JWT_SECRET=${JWT_SECRET}
       - HUGGINGFACE_TOKEN=${HUGGINGFACE_TOKEN}
+      - MONGO_URI=mongodb://mongodb:27017/brainbytes
       - PORT=4000
     depends_on:
       - mongodb
