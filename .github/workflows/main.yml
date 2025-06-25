@@ -36,10 +36,13 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-backend-node-
 
-      - name: ⚙️ Set up Node.js
+      - name: ⚙️ Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
+          node-version: '18'  # or 20
+
+      - name: ⬆️ Upgrade npm
+        run: npm install -g npm@latest
 
       - name: 📦 Install frontend dependencies
         working-directory: brainbytes-multi-container/frontend
