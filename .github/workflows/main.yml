@@ -181,13 +181,17 @@ jobs:
           docker compose up -d --build
           sleep 20
 
+      - name: 🧾 Debug Backend Logs
+        working-directory: brainbytes-multi-container
+        run: docker compose logs backend
+
       - name: 🧭 Install Playwright Browsers
         working-directory: brainbytes-multi-container
         run: npx playwright install --with-deps
 
       - name: ✅ Check Backend Health
         run: curl --fail http://localhost:4000/health || (echo "❌ Backend health check failed" && exit 1)
-        
+
       - name: ✅ Check Frontend Health
         run: curl --fail http://localhost:3000 || (echo "❌ Frontend health check failed" && exit 1)
 
