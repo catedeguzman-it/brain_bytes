@@ -19,8 +19,6 @@ jobs:
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v3
-        with:
-          path: brainbytes-multi-container
 
       - name: Cache frontend Node.js dependencies
         uses: actions/cache@v3
@@ -60,17 +58,16 @@ jobs:
         run: npm run lint || echo "Backend lint failed but continuing"
 
       - name: Run ESLint (merge report)
-        working-directory: brainbytes-multi-container/frontend
+        working-directory: brainbytes-multi-container
         run: |
-          npm run lint:js -- --format json --output-file ../../eslint-report.json || true
+          npm run lint:js -- --format json --output-file eslint-report.json || true
 
       - name: Annotate ESLint results (PR only)
         if: github.event_name == 'pull_request'
         uses: ataylorme/eslint-annotate-action@v2
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
-          report-json: "eslint-report.json"
-
+          report-json: "brainbytes-multi-container/eslint-report.json"
 
   test:
     name: 🧪 Run Unit Tests
@@ -84,8 +81,6 @@ jobs:
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v3
-        with:
-          path: brainbytes-multi-container
 
       - name: Cache frontend Node.js dependencies
         uses: actions/cache@v3
@@ -137,12 +132,8 @@ jobs:
             brainbytes-multi-container/backend/coverage
             brainbytes-multi-container/frontend/coverage
 
-      - name: 🔍 Check frontend for vulnerabilities
-        working-directory: brainbytes-multi-container/frontend
-        run: npm audit --json || true
-
-      - name: 🔍 Check backend for vulnerabilities
-        working-directory: brainbytes-multi-container/backend
+      - name: 🔍 Check for vulnerabilities
+        working-directory: brainbytes-multi-container
         run: npm audit --json || true
 
   build:
@@ -153,8 +144,6 @@ jobs:
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v3
-        with:
-          path: brainbytes-multi-container
 
       - name: Cache Docker layers
         uses: actions/cache@v3
@@ -197,8 +186,6 @@ jobs:
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v3
-        with:
-          path: brainbytes-multi-container
 
       - name: Download build artifacts
         uses: actions/download-artifact@v2
