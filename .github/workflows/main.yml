@@ -45,7 +45,7 @@ jobs:
 
       - name: 📦 Install frontend dependencies
         working-directory: brainbytes-multi-container/frontend
-        run: npm ci
+        run: npm install
 
       - name: 🔍 Lint frontend
         working-directory: brainbytes-multi-container/frontend
@@ -53,7 +53,7 @@ jobs:
 
       - name: 📦 Install backend dependencies
         working-directory: brainbytes-multi-container/backend
-        run: npm ci
+        run: npm install
 
       - name: 🔍 Lint backend
         working-directory: brainbytes-multi-container/backend
@@ -109,7 +109,7 @@ jobs:
 
       - name: 📦 Install frontend dependencies
         working-directory: brainbytes-multi-container/frontend
-        run: npm ci
+        run: npm install
 
       - name: 🧪 Frontend Tests
         working-directory: brainbytes-multi-container/frontend
@@ -122,7 +122,7 @@ jobs:
 
       - name: 📦 Install backend dependencies
         working-directory: brainbytes-multi-container/backend
-        run: npm ci
+        run: npm install
 
       - name: 🧪 Backend Tests with Coverage
         working-directory: brainbytes-multi-container/backend
