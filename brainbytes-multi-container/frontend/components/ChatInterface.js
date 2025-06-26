@@ -148,6 +148,11 @@ export default function ChatInterface() {
   setMessages([welcomeMessage]);
 };
 
+  // ✅ Redirect to dashboard
+  const goToDashboard = () => {
+  router.push('/dashboard');
+};
+
   // ✅ Prevent rendering until auth check is done
   if (!authChecked) return null;
 

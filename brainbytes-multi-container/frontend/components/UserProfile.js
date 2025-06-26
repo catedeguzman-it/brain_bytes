@@ -1,27 +1,46 @@
+// components/UserProfile.js
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 export default function UserProfile() {
-  const [profile, setProfile] = useState(null);
-  const userId = typeof window !== 'undefined' ? localStorage.getItem('userId') : null;
+  const router = useRouter();
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (userId) {
-      fetch(`${API_BASE}/api/user/${userId}`)
-        .then((res) => res.json())
-        .then(setProfile)
-        .catch((err) => console.error('Error loading profile:', err));
-    }
-  }, [userId]);
+    const userId = typeof window !== 'undefined' ? localStorage.getItem('userId') : null;
 
-  if (!profile) return <div>Loading profile...</div>;
+    if (!userId) {
+      router.push('/login');
+      return;
+    }
+
+    const fetchUser = async () => {
+      try {
+        const res = await fetch(`${API_BASE}/api/user/${userId}`);
+        const data = await res.json();
+        setUser(data);
+      } catch (err) {
+        console.error('Failed to load user info:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
+  if (loading) return <p>Loading user profile...</p>;
+
+  if (!user) return <p>User not found.</p>;
 
   return (
-    <div>
-      <h2>User Profile</h2>
-      <p><strong>Name:</strong> {profile.name}</p>
-      <p><strong>Email:</strong> {profile.email}</p>
+    <div style={{ padding: '1rem' }}>
+      <h2>Welcome, {user.name}</h2>
+      <p><strong>Email:</strong> {user.email}</p>
+      {/* Add more fields here as needed */}
     </div>
   );
 }
