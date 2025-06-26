@@ -13,7 +13,13 @@
   font-weight: bold;
 }
 
-.links button {
+.links {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.navButton {
   background-color: #636363;
   color: white;
   border: none;
@@ -21,8 +27,12 @@
   border-radius: 8px;
   cursor: pointer;
   font-weight: 500;
+  text-decoration: none;
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
 }
 
-.links button:hover {
+.navButton:hover {
   background-color: #353535;
 }

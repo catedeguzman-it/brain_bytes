@@ -14,4 +14,22 @@ export default function NavBar({ onLogout }) {
       </div>
     </nav>
   );
+}export default function NavBar({ onLogout, onNewChat }) {
+  return (
+    <nav className={styles.navbar}>
+      <div className={styles.logo}>🧠 BrainBytes</div>
+      <div className={styles.links}>
+        <a href="/dashboard" className={styles.navButton}>
+          Dashboard
+        </a>
+        <button onClick={onNewChat} className={styles.navButton}>
+          New Chat
+        </button>
+        <button onClick={onLogout} className={styles.navButton}>
+          Logout
+        </button>
+      </div>
+    </nav>
+  );
 }
+

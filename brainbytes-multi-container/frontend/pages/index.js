@@ -14,15 +14,30 @@ export default function Home() {
     setIsAuthenticated(auth);
   }, []);
 
+  // Function to handle login success
   const handleLoginSuccess = () => {
     setIsAuthenticated(true);
   };
 
+  // Function to handle register success
   const handleRegisterSuccess = () => {
     localStorage.setItem('hasRegistered', 'true');
     setActiveForm('login');
   };
 
+  // Function to handle dashboard navigation
+  const handleDashboard = () => {
+    window.location.href = '/dashboard'; // or use router.push('/dashboard') if using useRouter
+  };
+
+  // Function to handle new chat creation
+  const handleNewChat = () => {
+    const newSessionId = crypto.randomUUID();
+    localStorage.setItem('sessionId', newSessionId);
+    window.location.reload(); // or trigger a state reset in ChatInterface
+  };
+
+  // Function to handle user logout
   const handleLogout = () => {
     localStorage.clear();
     setIsAuthenticated(false);
@@ -133,7 +148,11 @@ export default function Home() {
 
   return (
     <>
-      <NavBar onLogout={handleLogout} />
+      <NavBar
+        onLogout={handleLogout}
+        onNewChat={handleNewChat}
+        onDashboard={handleDashboard}
+      />
       <ChatInterface />
     </>
   );
