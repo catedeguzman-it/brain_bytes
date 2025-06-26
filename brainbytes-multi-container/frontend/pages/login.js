@@ -28,7 +28,10 @@ export default function LoginForm({ onSuccess }) {
 
       localStorage.setItem('token', data.token);
       localStorage.setItem('sessionId', data.sessionId);
+      localStorage.setItem('userId', data.userId); 
       localStorage.setItem('isAuthenticated', 'true');
+    
+
 
       if (onSuccess) {
         onSuccess(); // Used in Home.js

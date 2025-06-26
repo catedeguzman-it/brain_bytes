@@ -5,7 +5,9 @@ const { connectToDatabase } = require('./models/db');
 const { setDb } = require('./controllers/chatController');
 const authRoutes = require('./routes/authRoutes');
 const chatRoutes = require('./routes/chatRoutes');
+const userRoutes = require('./routes/userRoutes');
 const { initializeAI } = require('./services/aiService');
+
 
 dotenv.config();
 const app = express();
@@ -22,6 +24,7 @@ app.use(express.json());
 // ───────────────────────
 app.use('/api', authRoutes);
 app.use('/api', chatRoutes);
+app.use('/api', userRoutes);
 
 // ──────── HEALTH CHECK ────────
 app.get('/health', (req, res) => res.send('OK'));

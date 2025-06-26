@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router'; // ✅ Import router
 import styles from '../styles/ChatInterface.module.css';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://hostname:4000';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 export default function ChatInterface() {
   const router = useRouter(); // ✅ Initialize router
@@ -81,7 +81,7 @@ export default function ChatInterface() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:4000/api/chat', {
+      const response = await fetch(`${API_BASE}/api/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

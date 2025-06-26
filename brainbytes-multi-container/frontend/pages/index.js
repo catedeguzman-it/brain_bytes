@@ -53,6 +53,11 @@ export default function Home() {
             textAlign: 'center',
           }}
         >
+          {/* 🧠 Logo and Title */}
+          <div style={{ fontSize: '48px', marginBottom: '10px' }}>🧠</div>
+          <h2 style={{ color: '#fff', marginBottom: '20px' }}>BrainBytes</h2>
+
+
           {activeForm === 'login' ? (
             <LoginForm
               onSuccess={handleLoginSuccess}
