@@ -1,6 +1,5 @@
-import dynamic from 'next/dynamic';
-const Dashboard = dynamic(() => import('../components/ProfileDashboard'), { ssr: false });
+import ProfileDashboard from '../components/ProfileDashboard';
 
 export default function DashboardPage() {
-  return <Dashboard />;
+  return <ProfileDashboard />;
 }
