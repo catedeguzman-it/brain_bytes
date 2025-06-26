@@ -8,16 +8,17 @@ export default function ProfileDashboard() {
   const userId = localStorage.getItem('userId');
 
   useEffect(() => {
-    if (!userId) return;
+    const userId = localStorage.getItem('userId');
+  if (!userId) return;
 
-    fetch(`${API_BASE}/api/user/${userId}`)
-      .then((res) => res.json())
-      .then(setUser);
+  fetch(`${API_BASE}/api/user/${userId}`)
+    .then((res) => res.json())
+    .then(setUser);
 
-    fetch(`${API_BASE}/api/messages/recent/${userId}`)
-      .then((res) => res.json())
-      .then(data => setRecentMessages(data.messages));
-  }, [userId]);
+  fetch(`${API_BASE}/api/messages/recent/${userId}`)
+    .then((res) => res.json())
+    .then(data => setRecentMessages(data.messages));
+}, []);
 
   if (!user) return <div>Loading dashboard...</div>;
 

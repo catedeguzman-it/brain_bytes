@@ -26,9 +26,9 @@ export default function LoginForm({ onSuccess }) {
         return;
       }
 
+      localStorage.setItem('userId', data.user._id);
       localStorage.setItem('token', data.token);
-      localStorage.setItem('sessionId', data.sessionId);
-      localStorage.setItem('userId', data.userId); 
+      localStorage.setItem('sessionId', data.sessionId); 
       localStorage.setItem('isAuthenticated', 'true');
     
 

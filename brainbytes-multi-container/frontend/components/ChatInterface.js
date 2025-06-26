@@ -1,46 +1,50 @@
 import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/router'; // ✅ Import router
+import { useRouter } from 'next/router';
 import styles from '../styles/ChatInterface.module.css';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 export default function ChatInterface() {
-  const router = useRouter(); // ✅ Initialize router
-
-  // ✅ Redirect unauthenticated users
-  const [authChecked, setAuthChecked] = useState(false); // 👈 State to track if auth check is done
+  const router = useRouter();
+  const [authChecked, setAuthChecked] = useState(false);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [token, setToken] = useState(null);
   const messagesEndRef = useRef(null);
 
-  // ✅ Check authentication on initial render
+  // ✅ Check authentication on initial render (client only)
   useEffect(() => {
-  const storedToken = localStorage.getItem('token');
-  if (!storedToken) {
-    router.push('/login');
-  } else {
-    setToken(storedToken);
-    setAuthChecked(true); // Allow rendering of chat interface
-  }
-}, []);
-
-
-  // ✅ Helper: Get or create session ID
-  const getOrCreateSessionId = () => {
-    let sessionId = localStorage.getItem('sessionId');
-    if (!sessionId) {
-      sessionId = crypto.randomUUID();
-      localStorage.setItem('sessionId', sessionId);
+    if (typeof window !== 'undefined') {
+      const storedToken = localStorage.getItem('token');
+      if (!storedToken) {
+        router.push('/login');
+      } else {
+        setToken(storedToken);
+        setAuthChecked(true);
+      }
     }
-    return sessionId;
+  }, []);
+
+  // ✅ Helper: Get or create session ID safely
+  const getOrCreateSessionId = () => {
+    if (typeof window !== 'undefined') {
+      let sessionId = localStorage.getItem('sessionId');
+      if (!sessionId) {
+        sessionId = crypto.randomUUID();
+        localStorage.setItem('sessionId', sessionId);
+      }
+      return sessionId;
+    }
+    return null;
   };
 
   // ✅ Load message history on initial render
   useEffect(() => {
     const loadHistory = async () => {
       const sessionId = getOrCreateSessionId();
+      if (!sessionId) return;
+
       try {
         const response = await fetch(`${API_BASE}/api/chat/history/${sessionId}`);
         const data = await response.json();
@@ -50,7 +54,9 @@ export default function ChatInterface() {
       }
     };
 
-    loadHistory();
+    if (typeof window !== 'undefined') {
+      loadHistory();
+    }
   }, []);
 
   // ✅ Auto-scroll to the bottom when messages change
@@ -67,8 +73,11 @@ export default function ChatInterface() {
     e.preventDefault();
     if (input.trim() === '') return;
 
-    // Generate a valid MongoDB ObjectId-like fallback if needed
-    const sessionId = localStorage.getItem('sessionId') || '64a1d4f6b1fcd75f3c1e0aab';
+    let sessionId = null;
+    if (typeof window !== 'undefined') {
+      sessionId = localStorage.getItem('sessionId') || '64a1d4f6b1fcd75f3c1e0aab';
+    }
+
     const userMessage = {
       id: Date.now(),
       text: input,
@@ -76,7 +85,7 @@ export default function ChatInterface() {
       timestamp: new Date().toISOString(),
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    setMessages((prev) => [...(prev || []), userMessage]);
     setInput('');
     setIsLoading(true);
 
@@ -85,8 +94,8 @@ export default function ChatInterface() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'sessionid': sessionId,
-          'Authorization': `Bearer ${token}`, // ✅ Include token for authentication
+          'sessionid': sessionId || '',
+          'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({ message: input }),
       });
@@ -100,7 +109,7 @@ export default function ChatInterface() {
         timestamp: new Date().toISOString(),
       };
 
-      setMessages((prev) => [...prev, aiMessage]);
+      setMessages((prev) => [...(prev || []), aiMessage]);
     } catch (error) {
       console.error('Error sending message:', error);
       setMessages((prev) => [
@@ -117,52 +126,74 @@ export default function ChatInterface() {
     }
   };
 
-  // ✅ Ensure auth check is done before rendering
+// ✅ Handle new chat creation
+  const handleNewChat = () => {
+  // Optional: Create a new sessionId
+  if (typeof window !== 'undefined') {
+    const newSessionId = crypto.randomUUID();
+    localStorage.setItem('sessionId', newSessionId);
+  }
+
+  // Reset state
+  setMessages([]);
+  setInput('');
+
+  // Optional: Add a welcome message
+  const welcomeMessage = {
+    id: Date.now(),
+    text: 'New chat started. How can I help you?',
+    sender: 'ai',
+    timestamp: new Date().toISOString(),
+  };
+  setMessages([welcomeMessage]);
+};
+
+  // ✅ Prevent rendering until auth check is done
   if (!authChecked) return null;
 
   return (
-  <div className={styles.chatWrapper}>
-    <div className={styles.chatContainer}>
-      <div className={styles.messagesContainer}>
-        {messages?.map((msg) => (
-          <div
-            key={msg._id || msg.id}
-            className={`${styles.message} ${
-              msg.sender === 'user' ? styles.userMessage : styles.aiMessage
-            }`}
-          >
-            <div className={styles.messageContent}>{msg.text}</div>
-            <div className={styles.messageTimestamp}>
-              {new Date(msg.timestamp).toLocaleTimeString()}
+    <div className={styles.chatWrapper}>
+      <div className={styles.chatContainer}>
+        <div className={styles.messagesContainer}>
+          {messages?.map((msg) => (
+            <div
+              key={msg._id || msg.id}
+              className={`${styles.message} ${
+                msg.sender === 'user' ? styles.userMessage : styles.aiMessage
+              }`}
+            >
+              <div className={styles.messageContent}>{msg.text}</div>
+              <div className={styles.messageTimestamp}>
+                {new Date(msg.timestamp).toLocaleTimeString()}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
 
-        {isLoading && (
-          <div className={`${styles.message} ${styles.aiMessage}`}>
-            <div className={styles.typingIndicator}>
-              <span></span>
-              <span></span>
-              <span></span>
+          {isLoading && (
+            <div className={`${styles.message} ${styles.aiMessage}`}>
+              <div className={styles.typingIndicator}>
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
             </div>
-          </div>
-        )}
-        <div ref={messagesEndRef} />
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+
+        <form onSubmit={handleSendMessage} className={styles.inputContainer}>
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Type your message here..."
+            className={styles.messageInput}
+          />
+          <button type="submit" className={styles.sendButton}>
+            Send
+          </button>
+        </form>
       </div>
-
-      <form onSubmit={handleSendMessage} className={styles.inputContainer}>
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Type your message here..."
-          className={styles.messageInput}
-        />
-        <button type="submit" className={styles.sendButton}>
-          Send
-        </button>
-      </form>
     </div>
-  </div>
-);
+  );
 }

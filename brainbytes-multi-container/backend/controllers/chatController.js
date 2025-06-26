@@ -25,12 +25,14 @@ const chatHandler = async (req, res) => {
     const { message } = req.body;
     const sessionId = req.headers.sessionid;
 
-    if (!sessionId) return res.status(400).json({ error: 'Missing sessionId header' });
+    if (!sessionId || typeof message !== 'string' || !message.trim()) {
+    return res.status(400).json({ error: 'Invalid sessionId or message' });
+}
 
     await updateSessionActivity(sessionId);
 
     await db.collection('messages').insertOne({
-      sessionId: new ObjectId(sessionId),
+      sessionId, // leave it as a string
       sender: 'user',
       text: message,
       timestamp: new Date()
@@ -51,7 +53,7 @@ const chatHandler = async (req, res) => {
     }
 
     await db.collection('messages').insertOne({
-      sessionId: new ObjectId(sessionId),
+      sessionId, // leave it as a string
       sender: 'ai',
       text: aiResponse,
       timestamp: new Date()
