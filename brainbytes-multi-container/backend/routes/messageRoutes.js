@@ -3,10 +3,16 @@ const router = express.Router();
 const { ObjectId } = require('mongodb');
 const { getDb } = require('../controllers/chatController');
 
+// GET /api/messages/recent/:userId
 router.get('/messages/recent/:userId', async (req, res) => {
-  const db = getDb();
-  const userId = req.params.userId;
+  const { userId } = req.params;
+
+  if (!ObjectId.isValid(userId)) {
+    return res.status(400).json({ error: 'Invalid user ID format' });
+  }
+
   try {
+    const db = getDb();
     const messages = await db.collection('messages')
       .find({ userId: new ObjectId(userId) })
       .sort({ timestamp: -1 })
@@ -15,6 +21,7 @@ router.get('/messages/recent/:userId', async (req, res) => {
 
     res.json({ messages });
   } catch (err) {
+    console.error('Error fetching recent messages:', err);
     res.status(500).json({ error: 'Failed to load recent messages' });
   }
 });
