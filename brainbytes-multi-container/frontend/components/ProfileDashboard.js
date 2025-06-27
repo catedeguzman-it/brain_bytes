@@ -1,56 +1,75 @@
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
+import styles from '../styles/ProfileDashboard.module.css';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 export default function ProfileDashboard() {
   const [user, setUser] = useState(null);
   const [recentMessages, setRecentMessages] = useState([]);
+  const router = useRouter();
 
-  useEffect(() => {
+  const fetchUserAndMessages = () => {
     const userId = typeof window !== 'undefined' ? localStorage.getItem('userId') : null;
     if (!userId) return;
 
     fetch(`${API_BASE}/api/user/${userId}`)
       .then((res) => res.json())
-      .then(setUser);
+      .then((data) => {
+        console.log('Fetched user:', data);
+        // Use data.user if response is nested
+        setUser(data.user || data);
+      });
 
     fetch(`${API_BASE}/api/messages/recent/${userId}`)
       .then((res) => res.json())
-      .then(data => setRecentMessages(data.messages));
+      .then((data) => {
+        console.log('Fetched messages:', data);
+        setRecentMessages(data.messages || []);
+      });
+  };
+
+  useEffect(() => {
+    fetchUserAndMessages();
   }, []);
 
+  const handleBack = () => {
+    fetchUserAndMessages();
+    setTimeout(() => router.back(), 200);
+  };
+
   if (!user) {
-    return <div style={{ padding: '2rem', color: '#2E2E2E' }}>Loading dashboard...</div>;
+    return <div className={styles.dashboardWrapper}>Loading dashboard...</div>;
   }
 
   return (
-    <div style={{
-      padding: '2rem',
-      backgroundColor: '#f5f5f5',
-      color: '#2E2E2E',
-      fontFamily: 'sans-serif',
-      minHeight: '100vh'
-    }}>
-      <div style={{
-        maxWidth: '600px',
-        margin: '0 auto',
-        backgroundColor: '#fff',
-        padding: '1.5rem',
-        borderRadius: '12px',
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
-      }}>
-        <h1 style={{ color: '#FFC107', marginBottom: '1rem' }}>Welcome, {user.name}</h1>
-        <p><strong>Email:</strong> {user.email}</p>
-        <p><strong>Joined:</strong> {new Date(user.createdAt).toLocaleDateString()}</p>
+    <div className={styles.dashboardWrapper}>
+      <div className={styles.dashboardCard}>
+        <div className={styles.backButtonContainer}>
+          <button className={styles.backButton} onClick={handleBack}>
+            ← Back
+          </button>
+        </div>
 
-        <h3 style={{ color: '#26C6DA', marginTop: '2rem' }}>Recent Messages</h3>
-        <ul style={{ paddingLeft: '1.25rem' }}>
-          {recentMessages.map(msg => (
-            <li key={msg._id} style={{ marginBottom: '0.5rem' }}>
-              <strong>{msg.sender}:</strong> {msg.text}
-            </li>
-          ))}
-        </ul>
+        <h1 className={styles.header}>Welcome, {user.name || 'User'}</h1>
+        <p className={styles.infoText}><strong>Email:</strong> {user.email || 'N/A'}</p>
+        <p className={styles.infoText}>
+          <strong>Joined:</strong>{' '}
+          {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}
+        </p>
+
+        <h3 className={styles.sectionTitle}>Recent Messages</h3>
+        {recentMessages.length > 0 ? (
+          <ul className={styles.messageList}>
+            {recentMessages.map((msg) => (
+              <li key={msg._id} className={styles.messageItem}>
+                <strong>{msg.sender}:</strong> {msg.text}
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p>No recent messages found.</p>
+        )}
       </div>
     </div>
   );

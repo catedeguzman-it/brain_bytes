@@ -1,0 +1,65 @@
+.dashboardWrapper {
+  padding: 2rem;
+  background-color: #03313f;
+  color: white;
+  font-family: 'Segoe UI', sans-serif;
+  min-height: 100vh;
+}
+
+.dashboardCard {
+  max-width: 600px;
+  margin: 0 auto;
+  background-color: #0f2a33;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.header {
+  color: #FFC107;
+  margin-bottom: 1rem;
+  font-size: 24px;
+}
+
+.infoText {
+  margin-bottom: 0.5rem;
+}
+
+.sectionTitle {
+  color: #26C6DA;
+  margin-top: 2rem;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.messageList {
+  padding-left: 1.25rem;
+  list-style: disc;
+}
+
+.messageItem {
+  margin-bottom: 0.5rem;
+}
+
+.backButtonContainer {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 1rem;
+}
+
+.backButton {
+  background-color: #636363;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  font-family: 'Segoe UI', sans-serif;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+}
+
+.backButton:hover {
+  background-color: #353535;
+}
