@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
+import UserProfile from './UserProfile';
 import styles from '../styles/ProfileDashboard.module.css';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
@@ -21,6 +22,7 @@ export default function ProfileDashboard() {
         setUser(data.user || data);
       });
 
+    // Fetch recent messages for the user
     fetch(`${API_BASE}/api/messages/recent/${userId}`)
       .then((res) => res.json())
       .then((data) => {
@@ -62,7 +64,12 @@ export default function ProfileDashboard() {
         {recentMessages.length > 0 ? (
           <ul className={styles.messageList}>
             {recentMessages.map((msg) => (
-              <li key={msg._id} className={styles.messageItem}>
+              <li
+                key={msg._id}
+                className={styles.messageItem}
+                onClick={() => router.push(`/chat/${msg.sessionId}`)}
+                style={{ cursor: 'pointer' }}
+              >
                 <strong>{msg.sender}:</strong> {msg.text}
               </li>
             ))}

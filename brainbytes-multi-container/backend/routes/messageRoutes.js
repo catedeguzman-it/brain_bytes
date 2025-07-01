@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { ObjectId } = require('mongodb');
-const { getDb } = require('../controllers/chatController');
+const { getDb } = require('../models/db');
 
 // GET /api/messages/recent/:userId
 router.get('/messages/recent/:userId', async (req, res) => {
@@ -14,7 +14,7 @@ router.get('/messages/recent/:userId', async (req, res) => {
   try {
     const db = getDb();
     const messages = await db.collection('messages')
-      .find({ userId: new ObjectId(userId) })
+      .find({ userId })
       .sort({ timestamp: -1 })
       .limit(5)
       .toArray();

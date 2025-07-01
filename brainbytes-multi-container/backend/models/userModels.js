@@ -15,6 +15,13 @@ exports.createUser = async ({ email, name, passwordHash }) => {
 
 exports.getUserById = async (id) => {
   const db = getDb();
+
+  // 🛑 Validate ObjectId before using it
+  if (!ObjectId.isValid(id)) {
+    console.warn(`Invalid user ID provided: ${id}`);
+    return null;
+  }
+
   return await db.collection('users').findOne({ _id: new ObjectId(id) });
 };
 
