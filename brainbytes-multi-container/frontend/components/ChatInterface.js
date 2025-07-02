@@ -48,20 +48,27 @@ export default function ChatInterface() {
   }, [authChecked, routeSessionId, router.isReady]);
 
   // ✅ Fetch chat history
-  useEffect(() => {
-    if (!sessionId) return;
-
-    const loadHistory = async () => {
+    const loadHistory = async (sessionId) => {
+      setIsLoading(true);
       try {
         const res = await fetch(`${API_BASE}/api/chat/history/${sessionId}`);
         const data = await res.json();
-        setMessages(data.messages || []);
+        
+        if (data.messages && !Array.isArray(data.messages)) {
+          setMessages(data.messages || []);
+        }
       } catch (err) {
         console.error('Error loading history:', err);
+        //Show error message to user
+      } finally {
+        setIsLoading(false);
       }
     };
-
-    loadHistory();
+  
+  // ✅ Load chat history when sessionId changes
+  useEffect(() => {
+    if (!sessionId) return;
+    loadHistory(sessionId);
   }, [sessionId]);
 
   // ✅ Scroll to bottom on new message
