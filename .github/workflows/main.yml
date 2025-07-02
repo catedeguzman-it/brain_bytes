@@ -219,3 +219,11 @@ jobs:
       - name: 🧹 Tear Down Docker
         working-directory: brainbytes-multi-container
         run: docker compose down
+
+      - name: 🚀 Deploy to Railpack
+        working-directory: brainbytes-multi-container
+        run: |
+          curl -fsSL https://railpack.com/install.sh | bash
+          ~/.railpack/bin/railpack deploy \
+          --project ${{ secrets.RAILPACK_PROJECT_ID }} \
+          --token ${{ secrets.RAILPACK_API_TOKEN }}
