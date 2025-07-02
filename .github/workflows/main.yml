@@ -183,6 +183,10 @@ jobs:
           echo "  mongodb:" >> docker-compose.override.yml
           echo "    ports:" >> docker-compose.override.yml
           echo "      - '37017:27017'" >> docker-compose.override.yml
+
+      - name: 🧪 Debug docker-compose.override.yml
+        working-directory: brainbytes-multi-container
+        run: cat docker-compose.override.yml
           
       - name: 🐳 Start Docker Compose
         working-directory: brainbytes-multi-container

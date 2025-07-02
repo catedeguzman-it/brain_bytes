@@ -1,0 +1,43 @@
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:4000
+    depends_on:
+      - backend
+    networks:
+      - brainbytes-network
+
+  backend:
+    build: ./backend
+    ports:
+      - "4000:4000"
+    environment:
+      - JWT_SECRET=${JWT_SECRET}
+      - HUGGINGFACE_TOKEN=${HUGGINGFACE_TOKEN}
+      - MONGO_URI=mongodb://mongodb:27017/brainbytes
+      - PORT=4000
+    depends_on:
+      - mongodb
+    networks:
+      - brainbytes-network
+    restart: unless-stopped
+    command: ["npm", "start"]  
+
+  mongodb:
+    image: mongo:4.4
+    ports:
+      - 37017:27017"
+    volumes:
+      - mongodb-data:/data/db
+    networks:
+      - brainbytes-network
+
+volumes:
+  mongodb-data:
+
+networks:
+  brainbytes-network:
+    driver: bridge
