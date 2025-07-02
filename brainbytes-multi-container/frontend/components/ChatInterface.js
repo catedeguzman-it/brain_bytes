@@ -14,6 +14,7 @@ export default function ChatInterface() {
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [token, setToken] = useState(null);
+  const [userId, setUserId] = useState(null);
   const messagesEndRef = useRef(null);
 
   // ✅ Check authentication
@@ -21,10 +22,12 @@ export default function ChatInterface() {
     if (typeof window === 'undefined') return;
 
     const storedToken = localStorage.getItem('token');
+    const storedUserId = localStorage.getItem('userId');
     if (!storedToken) {
       router.push('/login');
     } else {
       setToken(storedToken);
+      setUserId(storedUserId);
       setAuthChecked(true);
     }
   }, [router]);
@@ -54,9 +57,14 @@ export default function ChatInterface() {
         const res = await fetch(`${API_BASE}/api/chat/history/${sessionId}`);
         const data = await res.json();
         
-        if (data.messages && !Array.isArray(data.messages)) {
-          setMessages(data.messages || []);
-        }
+        console.log('🔁 Raw response:', data);
+
+        if (!Array.isArray(data.messages)) {
+        console.warn('⚠️ data.messages is not an array:', data.messages);
+    }
+
+      setMessages(Array.isArray(data.messages) ? data.messages : []);
+
       } catch (err) {
         console.error('Error loading history:', err);
         //Show error message to user
@@ -100,7 +108,7 @@ export default function ChatInterface() {
           sessionid: sessionId,
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ message: input }),
+        body: JSON.stringify({ message: input, userId }),
       });
 
       const data = await res.json();

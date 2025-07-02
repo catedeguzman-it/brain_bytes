@@ -3,26 +3,23 @@ const router = express.Router();
 const { ObjectId } = require('mongodb');
 const { getDb } = require('../models/db');
 
-// GET /api/messages/recent/:userId
-router.get('/messages/recent/:userId', async (req, res) => {
+// GET /api/sessions/:userId → Get recent sessions for a user
+router.get('/sessions/:userId', async (req, res) => {
   const { userId } = req.params;
-
-  if (!ObjectId.isValid(userId)) {
-    return res.status(400).json({ error: 'Invalid user ID format' });
-  }
 
   try {
     const db = getDb();
-    const messages = await db.collection('messages')
+
+    const sessions = await db.collection('sessions')
       .find({ userId })
-      .sort({ timestamp: -1 })
-      .limit(5)
+      .sort({ lastActive: -1 })  // Most recent sessions first
+      .limit(10)
       .toArray();
 
-    res.json({ messages });
+    res.json({ sessions });
   } catch (err) {
-    console.error('Error fetching recent messages:', err);
-    res.status(500).json({ error: 'Failed to load recent messages' });
+    console.error('❌ Error fetching sessions:', err);
+    res.status(500).json({ error: 'Failed to load sessions' });
   }
 });
 

@@ -5,9 +5,9 @@ async function getMessagesBySession(sessionId) {
   const db = getDb();
 
   // You must convert sessionId string to ObjectId
-  const objectId = new ObjectId(sessionId);
+ 
   const messages = await db.collection('messages')
-    .find({ sessionId: objectId })
+    .find({ sessionId })
     .sort({ timestamp: 1 })
     .toArray();
 

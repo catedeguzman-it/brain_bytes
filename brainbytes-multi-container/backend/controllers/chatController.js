@@ -22,7 +22,7 @@ const chatHandler = async (req, res) => {
   const db = getDb();
 
   try {
-    const { message } = req.body;
+    const { message, userId } = req.body;
     const sessionId = req.headers.sessionid;
 
     if (!sessionId || typeof message !== 'string' || !message.trim()) {
@@ -31,12 +31,16 @@ const chatHandler = async (req, res) => {
 
     await updateSessionActivity(sessionId);
 
+    // Save user's message
     await db.collection('messages').insertOne({
       sessionId, // leave it as a string
+      userId,
       sender: 'user',
       text: message,
       timestamp: new Date()
     });
+
+    // Generate AI response
 
     // Primary: Try fallbackResponse
     let aiResponse = fallbackResponse(message);
@@ -52,8 +56,10 @@ const chatHandler = async (req, res) => {
       }
     }
 
+    // Save AI's response
     await db.collection('messages').insertOne({
       sessionId, // leave it as a string
+      userId,
       sender: 'ai',
       text: aiResponse,
       timestamp: new Date()
