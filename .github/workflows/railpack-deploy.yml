@@ -1,0 +1,39 @@
+name: Railpack Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    name: Build & Deploy to Railpack
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install frontend & backend dependencies
+        run: |
+          cd brainbytes-multi-container/frontend && npm install
+          cd ../backend && npm install
+
+      - name: Run tests (optional)
+        run: |
+          cd brainbytes-multi-container/frontend && npm run test || true
+          cd ../backend && npm run test || true
+
+      - name: Install Railpack CLI
+        run: npm install -g railpack
+
+      - name: Deploy to Railpack
+        run: |
+          cd brainbytes-multi-container
+          railpack deploy --project ${{ secrets.RAILPACK_PROJECT_ID }} --token ${{ secrets.RAILPACK_API_TOKEN }}

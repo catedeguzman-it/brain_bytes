@@ -62,14 +62,14 @@ Week 1: Container Basics
 
 Week 2: Platform Development
 
-**[Team Member Name]**: Implement frontend container (Next.js) <br/>
-**[Team Member Name]**: Implement backend container (Node.js) <br/>
-**[Team Member Name]**: Configure MongoDB Atlas and connection
+**Catherine De Guzman**: Implement frontend container (Next.js) <br/>
+**Jennifer Cerio**: Implement backend container (Node.js) <br/>
+**Krisha Jusay**: Configure MongoDB Atlas and connection
 
 Week 3: Platform Development (continued)
 
-**[Team Member Name]**: Implement chat interface frontend <br/>
-**[Team Member Name]**: Implement backend API endpoints <br/>
+**Catherine De Guzman**: Implement chat interface frontend <br/>
+**Jennifer Cerio**: Implement backend API endpoints <br/>
 **[Team Member Name]**: Set up container networking
 
 Week 4: Integration and Testing

@@ -1,74 +1,94 @@
 import { useState, useEffect, useRef } from 'react';
-import { useRouter } from 'next/router'; // ✅ Import router
+import { useRouter } from 'next/router';
 import styles from '../styles/ChatInterface.module.css';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://hostname:4000';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 export default function ChatInterface() {
-  const router = useRouter(); // ✅ Initialize router
+  const router = useRouter();
+  const { sessionId: routeSessionId } = router.query;
 
-  // ✅ Redirect unauthenticated users
-  const [authChecked, setAuthChecked] = useState(false); // 👈 State to track if auth check is done
+  const [sessionId, setSessionId] = useState(null);
+  const [authChecked, setAuthChecked] = useState(false);
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [token, setToken] = useState(null);
+  const [userId, setUserId] = useState(null);
   const messagesEndRef = useRef(null);
 
-  // ✅ Check authentication on initial render
+  // ✅ Check authentication
   useEffect(() => {
-  const storedToken = localStorage.getItem('token');
-  if (!storedToken) {
-    router.push('/login');
-  } else {
-    setToken(storedToken);
-    setAuthChecked(true); // Allow rendering of chat interface
-  }
-}, []);
+    if (typeof window === 'undefined') return;
 
-
-  // ✅ Helper: Get or create session ID
-  const getOrCreateSessionId = () => {
-    let sessionId = localStorage.getItem('sessionId');
-    if (!sessionId) {
-      sessionId = crypto.randomUUID();
-      localStorage.setItem('sessionId', sessionId);
+    const storedToken = localStorage.getItem('token');
+    const storedUserId = localStorage.getItem('userId');
+    if (!storedToken) {
+      router.push('/login');
+    } else {
+      setToken(storedToken);
+      setUserId(storedUserId);
+      setAuthChecked(true);
     }
-    return sessionId;
-  };
+  }, [router]);
 
-  // ✅ Load message history on initial render
+  // ✅ Setup sessionId once router is ready and auth is checked
   useEffect(() => {
-    const loadHistory = async () => {
-      const sessionId = getOrCreateSessionId();
+    if (!authChecked || !router.isReady) return;
+
+    let sid = routeSessionId;
+
+    if (!sid) {
+      sid = localStorage.getItem('sessionId');
+    }
+
+    if (!sid) {
+      sid = crypto.randomUUID();
+    }
+
+    localStorage.setItem('sessionId', sid);
+    setSessionId(sid);
+  }, [authChecked, routeSessionId, router.isReady]);
+
+  // ✅ Fetch chat history
+    const loadHistory = async (sessionId) => {
+      setIsLoading(true);
       try {
-        const response = await fetch(`${API_BASE}/api/chat/history/${sessionId}`);
-        const data = await response.json();
-        setMessages(data.messages);
+        const res = await fetch(`${API_BASE}/api/chat/history/${sessionId}`);
+        const data = await res.json();
+        
+        console.log('🔁 Raw response:', data);
+
+        if (!Array.isArray(data.messages)) {
+        console.warn('⚠️ data.messages is not an array:', data.messages);
+    }
+
+      setMessages(Array.isArray(data.messages) ? data.messages : []);
+
       } catch (err) {
         console.error('Error loading history:', err);
+        //Show error message to user
+      } finally {
+        setIsLoading(false);
       }
     };
-
-    loadHistory();
-  }, []);
-
-  // ✅ Auto-scroll to the bottom when messages change
+  
+  // ✅ Load chat history when sessionId changes
   useEffect(() => {
-    scrollToBottom();
+    if (!sessionId) return;
+    loadHistory(sessionId);
+  }, [sessionId]);
+
+  // ✅ Scroll to bottom on new message
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  // ✅ Handle sending a message
+  // ✅ Send message
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (input.trim() === '') return;
 
-    // Generate a valid MongoDB ObjectId-like fallback if needed
-    const sessionId = localStorage.getItem('sessionId') || '64a1d4f6b1fcd75f3c1e0aab';
     const userMessage = {
       id: Date.now(),
       text: input,
@@ -81,17 +101,17 @@ export default function ChatInterface() {
     setIsLoading(true);
 
     try {
-      const response = await fetch('http://localhost:4000/api/chat', {
+      const res = await fetch(`${API_BASE}/api/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'sessionid': sessionId,
-          'Authorization': `Bearer ${token}`, // ✅ Include token for authentication
+          sessionid: sessionId,
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ message: input }),
+        body: JSON.stringify({ message: input, userId }),
       });
 
-      const data = await response.json();
+      const data = await res.json();
 
       const aiMessage = {
         id: Date.now() + 1,
@@ -101,8 +121,8 @@ export default function ChatInterface() {
       };
 
       setMessages((prev) => [...prev, aiMessage]);
-    } catch (error) {
-      console.error('Error sending message:', error);
+    } catch (err) {
+      console.error('Error sending message:', err);
       setMessages((prev) => [
         ...prev,
         {
@@ -117,52 +137,61 @@ export default function ChatInterface() {
     }
   };
 
-  // ✅ Ensure auth check is done before rendering
+  const handleNewChat = () => {
+    const newSessionId = crypto.randomUUID();
+    localStorage.setItem('sessionId', newSessionId);
+    router.push(`/chat/${newSessionId}`);
+  };
+
+  const goToDashboard = () => {
+    router.push('/dashboard');
+  };
+
   if (!authChecked) return null;
 
   return (
-  <div className={styles.chatWrapper}>
-    <div className={styles.chatContainer}>
-      <div className={styles.messagesContainer}>
-        {messages?.map((msg) => (
-          <div
-            key={msg._id || msg.id}
-            className={`${styles.message} ${
-              msg.sender === 'user' ? styles.userMessage : styles.aiMessage
-            }`}
-          >
-            <div className={styles.messageContent}>{msg.text}</div>
-            <div className={styles.messageTimestamp}>
-              {new Date(msg.timestamp).toLocaleTimeString()}
+    <div className={styles.chatWrapper}>
+      <div className={styles.chatContainer}>
+        <div className={styles.messagesContainer}>
+          {messages.map((msg) => (
+            <div
+              key={msg._id || msg.id}
+              className={`${styles.message} ${
+                msg.sender === 'user' ? styles.userMessage : styles.aiMessage
+              }`}
+            >
+              <div className={styles.messageContent}>{msg.text}</div>
+              <div className={styles.messageTimestamp}>
+                {new Date(msg.timestamp).toLocaleTimeString()}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
 
-        {isLoading && (
-          <div className={`${styles.message} ${styles.aiMessage}`}>
-            <div className={styles.typingIndicator}>
-              <span></span>
-              <span></span>
-              <span></span>
+          {isLoading && (
+            <div className={`${styles.message} ${styles.aiMessage}`}>
+              <div className={styles.typingIndicator}>
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
             </div>
-          </div>
-        )}
-        <div ref={messagesEndRef} />
+          )}
+          <div ref={messagesEndRef} />
+        </div>
+
+        <form onSubmit={handleSendMessage} className={styles.inputContainer}>
+          <input
+            type="text"
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            placeholder="Type your message here..."
+            className={styles.messageInput}
+          />
+          <button type="submit" className={styles.sendButton}>
+            Send
+          </button>
+        </form>
       </div>
-
-      <form onSubmit={handleSendMessage} className={styles.inputContainer}>
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Type your message here..."
-          className={styles.messageInput}
-        />
-        <button type="submit" className={styles.sendButton}>
-          Send
-        </button>
-      </form>
     </div>
-  </div>
-);
+  );
 }

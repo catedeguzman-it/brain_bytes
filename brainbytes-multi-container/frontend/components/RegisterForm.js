@@ -23,6 +23,7 @@ export default function RegisterForm({ onSuccess }) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Registration failed');
 
+      localStorage.setItem('userId', data.user._id);
       localStorage.setItem('token', data.token);
       localStorage.setItem('sessionId', data.sessionId);
       localStorage.setItem('hasRegistered', 'true');

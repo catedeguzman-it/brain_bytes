@@ -3,26 +3,29 @@ import ChatInterface from '../components/ChatInterface';
 import NavBar from '../components/NavBar';
 import LoginForm from '../components/LoginForm';
 import RegisterForm from '../components/RegisterForm';
+import styles from '../styles/Index.module.css'; // ✅ Import CSS module
 
 export default function Home() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [activeForm, setActiveForm] = useState('login'); // 'login' or 'register'
-  const [loginHandler, setLoginHandler] = useState(null); // ✅ State-based login handler
+  const [activeForm, setActiveForm] = useState('login');
+  const [loginHandler, setLoginHandler] = useState(null);
 
   useEffect(() => {
     const auth = localStorage.getItem('isAuthenticated') === 'true';
     setIsAuthenticated(auth);
   }, []);
 
-  const handleLoginSuccess = () => {
-    setIsAuthenticated(true);
-  };
-
+  const handleLoginSuccess = () => setIsAuthenticated(true);
   const handleRegisterSuccess = () => {
     localStorage.setItem('hasRegistered', 'true');
     setActiveForm('login');
   };
-
+  const handleDashboard = () => window.location.href = '/dashboard';
+  const handleNewChat = () => {
+    const newSessionId = crypto.randomUUID();
+    localStorage.setItem('sessionId', newSessionId);
+    window.location.reload();
+  };
   const handleLogout = () => {
     localStorage.clear();
     setIsAuthenticated(false);
@@ -31,53 +34,25 @@ export default function Home() {
 
   if (!isAuthenticated) {
     return (
-      <div
-        style={{
-          minHeight: '100vh',
-          backgroundColor: '#0f0f0f',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          fontFamily: 'Segoe UI, sans-serif',
-          padding: '20px',
-        }}
-      >
-        <div
-          style={{
-            backgroundColor: '#1e1e1e',
-            padding: '40px',
-            borderRadius: '12px',
-            boxShadow: '0 0 20px rgba(0, 0, 0, 0.5)',
-            width: '100%',
-            maxWidth: '400px',
-            textAlign: 'center',
-          }}
-        >
+      <div className={styles.homeContainer}>
+        <div className={styles.authBox}>
+          <div className={styles.logoIcon}>🧠</div>
+          <h2 className={styles.title}>BrainBytes</h2>
+
           {activeForm === 'login' ? (
             <LoginForm
               onSuccess={handleLoginSuccess}
-              setLoginHandler={setLoginHandler} // ✅ Correct handler
+              setLoginHandler={setLoginHandler}
             />
           ) : (
             <RegisterForm onSuccess={handleRegisterSuccess} />
           )}
 
-          <div style={{ marginTop: '30px' }}>
+          <div className={styles.buttonGroup}>
             {activeForm === 'register' && (
               <button
                 onClick={() => setActiveForm('login')}
-                style={{
-                  padding: '10px 20px',
-                  backgroundColor: '#4f46e5',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  fontWeight: 'bold',
-                  transition: 'background-color 0.2s ease',
-                }}
-                onMouseOver={(e) => (e.target.style.backgroundColor = '#4338ca')}
-                onMouseOut={(e) => (e.target.style.backgroundColor = '#4f46e5')}
+                className={`${styles.authButton} ${styles.loginButton}`}
               >
                 Login
               </button>
@@ -86,35 +61,14 @@ export default function Home() {
             {activeForm === 'login' && (
               <>
                 <button
-                  onClick={() => {
-                    if (typeof loginHandler === 'function') {
-                      loginHandler();
-                    }
-                  }}
-                  style={{
-                    marginRight: '10px',
-                    padding: '10px 20px',
-                    backgroundColor: '#4f46e5',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontWeight: 'bold',
-                  }}
+                  onClick={() => loginHandler?.()}
+                  className={`${styles.authButton} ${styles.loginButton}`}
                 >
                   Login
                 </button>
                 <button
                   onClick={() => setActiveForm('register')}
-                  style={{
-                    padding: '10px 20px',
-                    backgroundColor: '#444',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '6px',
-                    cursor: 'pointer',
-                    fontWeight: 'bold',
-                  }}
+                  className={`${styles.authButton} ${styles.registerButton}`}
                 >
                   Register
                 </button>
@@ -128,7 +82,11 @@ export default function Home() {
 
   return (
     <>
-      <NavBar onLogout={handleLogout} />
+      <NavBar
+        onLogout={handleLogout}
+        onNewChat={handleNewChat}
+        onDashboard={handleDashboard}
+      />
       <ChatInterface />
     </>
   );

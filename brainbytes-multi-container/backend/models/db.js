@@ -2,13 +2,14 @@ const { MongoClient } = require('mongodb');
 const dotenv = require('dotenv');
 dotenv.config();
 
-const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/brainbytes';
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://mongodb:27017/brainbytes'; // updated for Docker
 
 let db;
 
 async function connectToDatabase() {
-  const client = await MongoClient.connect(MONGO_URI, { useUnifiedTopology: true });
+  const client = await MongoClient.connect(MONGO_URI);
   db = client.db();
+  console.log("🔎 MONGO_URI:", process.env.MONGO_URI);
   console.log('✅ Connected to MongoDB');
   return db;
 }
