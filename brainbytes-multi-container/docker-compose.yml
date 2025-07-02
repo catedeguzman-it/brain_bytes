@@ -1,6 +1,7 @@
 services:
   frontend:
     build: ./frontend
+    command: npm run start
     ports:
       - "8080:3000"
     environment:
@@ -12,6 +13,7 @@ services:
 
   backend:
     build: ./backend
+    command: node server.js
     ports:
       - "4000:4000"
     environment:
@@ -24,7 +26,7 @@ services:
     networks:
       - brainbytes-network
     restart: unless-stopped
-    command: ["npm", "start"]  
+   
 
   mongodb:
     image: mongo:4.4
