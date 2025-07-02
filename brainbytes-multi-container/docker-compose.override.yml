@@ -1,5 +1,0 @@
-  services:
-    mongodb:
-      ports:
-        - 37017:27017
-

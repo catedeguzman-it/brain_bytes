@@ -175,24 +175,10 @@ jobs:
           echo "PORT=4000" >> .env
           echo "HF_API_KEY=${{ secrets.HF_API_KEY }}" >> .env
 
-      - name: 🐳 Create docker-compose.override.yml (force MongoDB port to 37017)
+      - name: 🐳 Start Docker Compose
         working-directory: brainbytes-multi-container
         run: |
-          printf "%s\n" \
-          "services:" \
-          "  mongodb:" \
-          "    ports:" \
-          "      - 37017:27017" \
-          > docker-compose.override.yml
-
-      - name: 🧪 Debug docker-compose.override.yml
-        working-directory: brainbytes-multi-container
-        run: cat docker-compose.override.yml
-
-      - name: 🐳 Build and Start Docker Compose (with override)
-        working-directory: brainbytes-multi-container
-        run: |
-          docker compose -f docker-compose.yml -f docker-compose.override.yml up -d --build
+          docker compose up -d --build
           sleep 20
 
       - name: 🧾 Debug Backend Logs (Full)
