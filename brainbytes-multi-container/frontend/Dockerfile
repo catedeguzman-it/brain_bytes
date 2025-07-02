@@ -11,4 +11,4 @@ COPY . .
 
 ENV HOST=http://localhost:4000
 EXPOSE 3000
-CMD ["npm", "run", "dev"]
+CMD ["npm", "run", "start"]
