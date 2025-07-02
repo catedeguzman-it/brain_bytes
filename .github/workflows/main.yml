@@ -220,10 +220,22 @@ jobs:
         working-directory: brainbytes-multi-container
         run: docker compose down
 
-      - name: 🚀 Deploy to Railpack
-        working-directory: brainbytes-multi-container
-        run: |
-          curl -fsSL https://railpack.com/install.sh | bash
-          ~/.railpack/bin/railpack deploy \
+  
+  deploy:
+    name: 🚀 Deploy to Railpack
+    needs: integration-test
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 📥 Checkout code
+      uses: actions/checkout@v3
+
+    - name: 🚀 Deploy App to Railpack
+      working-directory: brainbytes-multi-container
+      run: |
+        curl -fsSL https://railpack.com/install.sh | bash
+        export PATH="$HOME/.railpack/bin:$PATH"
+        railpack deploy \
           --project ${{ secrets.RAILPACK_PROJECT_ID }} \
           --token ${{ secrets.RAILPACK_API_TOKEN }}
+
