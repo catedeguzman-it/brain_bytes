@@ -50,34 +50,39 @@ export default function ChatInterface() {
     setSessionId(sid);
   }, [authChecked, routeSessionId, router.isReady]);
 
-  // ✅ Fetch chat history
-    const loadHistory = async (sessionId) => {
-      setIsLoading(true);
-      try {
-        const res = await fetch(`${API_BASE}/api/chat/history/${sessionId}`);
-        const data = await res.json();
-        
-        console.log('🔁 Raw response:', data);
-
-        if (!Array.isArray(data.messages)) {
-        console.warn('⚠️ data.messages is not an array:', data.messages);
-    }
+  const loadHistory = async (sessionId) => {
+    setIsLoading(true);
+    try {
+      const res = await fetch(`${API_BASE}/api/chat/history/${sessionId}`);
+      const data = await res.json();
 
       setMessages(Array.isArray(data.messages) ? data.messages : []);
+    } catch (err) {
+      console.error('Error loading history:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-      } catch (err) {
-        console.error('Error loading history:', err);
-        //Show error message to user
-      } finally {
-        setIsLoading(false);
-      }
-    };
-  
-  // ✅ Load chat history when sessionId changes
-  useEffect(() => {
-    if (!sessionId) return;
-    loadHistory(sessionId);
-  }, [sessionId]);
+    
+    useEffect(() => {
+      if (!userId) return;
+
+      const loadHistory = async () => {
+        setIsLoading(true);
+        try {
+          const res = await fetch(`${API_BASE}/api/chat/history/user/${userId}`);
+          const data = await res.json();
+          setMessages(Array.isArray(data.messages) ? data.messages : []);
+        } catch (err) {
+          console.error('Error loading history:', err);
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      loadHistory();
+    }, [userId]);
 
   // ✅ Scroll to bottom on new message
   useEffect(() => {

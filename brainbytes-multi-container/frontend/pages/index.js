@@ -26,9 +26,14 @@ export default function Home() {
     localStorage.setItem('sessionId', newSessionId);
     window.location.reload();
   };
+
   const handleLogout = () => {
-    localStorage.clear();
-    setIsAuthenticated(false);
+    localStorage.removeItem('token');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('sessionId');
+    localStorage.setItem('isAuthenticated', 'false');
+
+    setIsAuthenticated(false); // ✅ Trigger UI logout state
     setActiveForm('login');
   };
 
