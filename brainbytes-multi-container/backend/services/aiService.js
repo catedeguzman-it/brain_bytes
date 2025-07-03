@@ -17,18 +17,18 @@ async function generateResponse(question) {
   const isHistory = lowerQuestion.includes('history') || lowerQuestion.includes('capital') || lowerQuestion.includes('philippines') || lowerQuestion.includes('president');
   const isScience = lowerQuestion.includes('science') || lowerQuestion.includes('evaporation') || lowerQuestion.includes('precipitation') || lowerQuestion.includes('water') || lowerQuestion.includes('chemical');
 
-  let category = 'general';
-  if (isMath) category = 'math';
-  if (isHistory) category = 'history';
-  if (isScience) category = 'science';
+  let category = 'General';
+  if (isMath) category = 'Math';
+  if (isHistory) category = 'History';
+  if (isScience) category = 'Science';
 
   // Hardcoded fallback responses
   if (lowerQuestion === 'what is 1+1' || lowerQuestion === '1+1') {
-    return { category: 'math', response: "The answer to 1+1 is 2." };
+    return { category: 'Math', response: "The answer to 1+1 is 2." };
   }
   if (lowerQuestion === 'what is evaporation') {
     return {
-      category: 'science',
+      category: 'Science',
       response: "Evaporation is the process where liquid water changes into vapor due to heat."
     };
   }
@@ -42,7 +42,7 @@ async function generateResponse(question) {
   const isFrustrated = lowerQuestion.includes("i don't understand") || lowerQuestion.includes('confused') || lowerQuestion.includes('hard') || lowerQuestion.includes('difficult');
   if (isFrustrated) {
     return {
-      category: 'support',
+      category: 'Support',
       response: "It’s okay to feel stuck. Let’s break it down together. Where would you like to start?"
     };
   }

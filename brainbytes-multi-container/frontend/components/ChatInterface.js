@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import styles from '../styles/ChatInterface.module.css';
+import NavBar from '../components/NavBar';
+import Sidebar from '../components/Sidebar';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
@@ -152,51 +154,73 @@ export default function ChatInterface() {
     router.push('/dashboard');
   };
 
-  if (!authChecked) return null;
+    if (!authChecked) return null;
 
   return (
-    <div className={styles.chatWrapper}>
-      <div className={styles.chatContainer}>
-        <div className={styles.messagesContainer}>
-          {messages.map((msg) => (
-            <div
-              key={msg._id || msg.id}
-              className={`${styles.message} ${
-                msg.sender === 'user' ? styles.userMessage : styles.aiMessage
-              }`}
-            >
-              <div className={styles.messageContent}>{msg.text}</div>
-              <div className={styles.messageTimestamp}>
-                {new Date(msg.timestamp).toLocaleTimeString()}
-              </div>
-            </div>
-          ))}
+    <>
+      <NavBar
+        onLogout={() => {
+          localStorage.removeItem('token');
+          localStorage.removeItem('userId');
+          localStorage.removeItem('sessionId');
+          router.push('/login');
+        }}
+        onNewChat={handleNewChat}
+        onDashboard={goToDashboard}
+      />
 
-          {isLoading && (
-            <div className={`${styles.message} ${styles.aiMessage}`}>
-              <div className={styles.typingIndicator}>
-                <span></span>
-                <span></span>
-                <span></span>
-              </div>
+      <div style={{ display: 'flex', height: 'calc(100vh - 60px)' }}>
+        <Sidebar
+          userId={userId}
+          onSelectSession={(id) => {
+            localStorage.setItem('sessionId', id);
+            router.push(`/chat?sessionId=${id}`);
+          }}
+        />
+        <div className={styles.chatWrapper} style={{ flex: 1 }}>
+          <div className={styles.chatContainer}>
+            <div className={styles.messagesContainer}>
+              {messages.map((msg) => (
+                <div
+                  key={msg._id || msg.id}
+                  className={`${styles.message} ${
+                    msg.sender === 'user' ? styles.userMessage : styles.aiMessage
+                  }`}
+                >
+                  <div className={styles.messageContent}>{msg.text}</div>
+                  <div className={styles.messageTimestamp}>
+                    {new Date(msg.timestamp).toLocaleTimeString()}
+                  </div>
+                </div>
+              ))}
+
+              {isLoading && (
+                <div className={`${styles.message} ${styles.aiMessage}`}>
+                  <div className={styles.typingIndicator}>
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                  </div>
+                </div>
+              )}
+              <div ref={messagesEndRef} />
             </div>
-          )}
-          <div ref={messagesEndRef} />
+
+            <form onSubmit={handleSendMessage} className={styles.inputContainer}>
+              <input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Type your message here..."
+                className={styles.messageInput}
+              />
+              <button type="submit" className={styles.sendButton}>
+                Send
+              </button>
+            </form>
+          </div>
         </div>
-
-        <form onSubmit={handleSendMessage} className={styles.inputContainer}>
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Type your message here..."
-            className={styles.messageInput}
-          />
-          <button type="submit" className={styles.sendButton}>
-            Send
-          </button>
-        </form>
       </div>
-    </div>
+    </>
   );
 }

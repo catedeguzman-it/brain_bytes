@@ -1,6 +1,6 @@
 .sidebarWrapper {
   width: 260px;
-  background-color: #f7f9fa; /* match chatWrapper */
+  background-color: #f7f9fa;
   height: 100vh;
   display: flex;
   flex-direction: column;

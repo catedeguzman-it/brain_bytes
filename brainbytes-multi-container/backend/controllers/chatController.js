@@ -26,14 +26,14 @@ const chatHandler = async (req, res) => {
     const sessionId = req.headers.sessionid;
 
     if (!sessionId || typeof message !== 'string' || !message.trim()) {
-    return res.status(400).json({ error: 'Invalid sessionId or message' });
-}
+      return res.status(400).json({ error: 'Invalid sessionId or message' });
+    }
 
     await updateSessionActivity(sessionId);
 
     // Save user's message
     await db.collection('messages').insertOne({
-      sessionId, // leave it as a string
+      sessionId,
       userId,
       sender: 'user',
       text: message,
@@ -41,15 +41,14 @@ const chatHandler = async (req, res) => {
     });
 
     // Generate AI response
-
-    // Primary: Try fallbackResponse
     let aiResponse = fallbackResponse(message);
+    let topic = 'general';
 
-    // If no match, fallback to Hugging Face
     if (!aiResponse) {
       try {
         const ai = await generateResponse(message);
         aiResponse = ai.response || "I'm here to help, but I need a bit more context.";
+        topic = ai.category || 'general';
       } catch (error) {
         console.warn('⚠️ GROQ fallback failed');
         aiResponse = "Sorry, I'm having trouble understanding right now. Try again later.";
@@ -58,12 +57,28 @@ const chatHandler = async (req, res) => {
 
     // Save AI's response
     await db.collection('messages').insertOne({
-      sessionId, // leave it as a string
+      sessionId,
       userId,
       sender: 'ai',
       text: aiResponse,
       timestamp: new Date()
     });
+
+    // Upsert chat session with topic
+    await db.collection('chat_sessions').updateOne(
+      { sessionId },
+      {
+        $set: {
+          topic,
+          updatedAt: new Date()
+        },
+        $setOnInsert: {
+          userId,
+          createdAt: new Date()
+        }
+      },
+      { upsert: true }
+    );
 
     res.json({ message: aiResponse, sessionId });
   } catch (error) {

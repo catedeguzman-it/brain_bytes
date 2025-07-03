@@ -1,65 +1,79 @@
 .dashboardWrapper {
-  padding: 2rem;
-  background-color: #03313f;
-  color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #e0f2f1; /* Soft teal */
+  height: 100vh;
+  padding: 20px;
   font-family: 'Segoe UI', sans-serif;
-  min-height: 100vh;
 }
 
 .dashboardCard {
+  background-color: #f7f9fa; /* Light blue-gray like chatContainer */
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
   max-width: 600px;
-  margin: 0 auto;
-  background-color: #0f2a33;
-  padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-}
-
-.header {
-  color: #FFC107;
-  margin-bottom: 1rem;
-  font-size: 24px;
-}
-
-.infoText {
-  margin-bottom: 0.5rem;
-}
-
-.sectionTitle {
-  color: #26C6DA;
-  margin-top: 2rem;
-  font-size: 18px;
-  font-weight: bold;
-}
-
-.messageList {
-  padding-left: 1.25rem;
-  list-style: disc;
-}
-
-.messageItem {
-  margin-bottom: 0.5rem;
+  width: 100%;
 }
 
 .backButtonContainer {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 1rem;
+  margin-bottom: 16px;
 }
 
 .backButton {
-  background-color: #636363;
+  background-color: #26a69a;
   color: white;
   border: none;
-  padding: 8px 16px;
+  padding: 10px 16px;
   border-radius: 8px;
-  cursor: pointer;
   font-weight: 500;
-  font-family: 'Segoe UI', sans-serif;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.backButton:hover {
+  background-color: #2bbbad;
+}
+
+.header {
+  font-size: 24px;
+  margin-bottom: 12px;
+  color: #004d40;
+}
+
+.infoText {
+  font-size: 15px;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.sectionTitle {
+  font-size: 18px;
+  margin-top: 24px;
+  margin-bottom: 10px;
+  color: #00796b;
+}
+
+.messageList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 200px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #ccc #f0f0f0;
+}
+
+.messageItem {
+  padding: 10px 12px;
+  background-color: #eceff1;
+  border-radius: 10px;
+  margin-bottom: 8px;
   font-size: 14px;
   transition: background-color 0.2s ease;
 }
 
-.backButton:hover {
-  background-color: #353535;
+.messageItem:hover {
+  background-color: #d0dce2;
 }
