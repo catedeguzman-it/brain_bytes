@@ -14,7 +14,7 @@ const fallbackResponse = (message) => {
   } else if (lower.includes('science')) {
     return 'Science is fascinating! Do you have questions about biology, chemistry, or physics?';
   } else {
-    return null; // This triggers fallback to Hugging Face
+    return null; // This triggers fallback to Groq AI
   }
 };
 
@@ -51,7 +51,7 @@ const chatHandler = async (req, res) => {
         const ai = await generateResponse(message);
         aiResponse = ai.response || "I'm here to help, but I need a bit more context.";
       } catch (error) {
-        console.warn('⚠️ Hugging Face fallback failed');
+        console.warn('⚠️ GROQ fallback failed');
         aiResponse = "Sorry, I'm having trouble understanding right now. Try again later.";
       }
     }
