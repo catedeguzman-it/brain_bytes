@@ -1,0 +1,46 @@
+.sidebarWrapper {
+  width: 260px;
+  background-color: #f7f9fa; /* match chatWrapper */
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  font-family: 'Segoe UI', sans-serif;
+  border-right: 1px solid #ccc;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+}
+
+.sidebarTitle {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 16px;
+  color: #004d40;
+}
+
+.topicFilter {
+  margin-bottom: 16px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid #bbb;
+  background-color: #ffffff;
+  font-size: 14px;
+  color: #333;
+}
+
+.sessionButton {
+  background-color: #f7f9fa; /* match chatContainer */
+  border: 1px solid #dce0e0;
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  color: #333;
+  font-size: 14px;
+}
+
+.sessionButton:hover {
+  background-color: #cfd8dc; /* same as aiMessage */
+}
