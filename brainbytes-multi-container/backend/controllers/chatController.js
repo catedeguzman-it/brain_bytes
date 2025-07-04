@@ -42,20 +42,25 @@ const chatHandler = async (req, res) => {
 
     // Generate AI response
     let aiResponse = fallbackResponse(message);
-    let topic = 'general';
+    let topicTitle = 'General';
 
     if (!aiResponse) {
       try {
         const ai = await generateResponse(message);
         aiResponse = ai.response || "I'm here to help, but I need a bit more context.";
-        topic = ai.category || 'general';
+
+        // Use ai.category and ai.topic if available
+        topicTitle = ai.category && ai.topic
+          ? `${ai.category} – ${ai.topic}`
+          : `General – ${message.trim().slice(0, 30)}`;
       } catch (error) {
         console.warn('⚠️ GROQ fallback failed');
         aiResponse = "Sorry, I'm having trouble understanding right now. Try again later.";
+        topicTitle = 'General';
       }
     }
 
-    // Save AI's response
+    // Save AI's response (only once)
     await db.collection('messages').insertOne({
       sessionId,
       userId,
@@ -64,12 +69,12 @@ const chatHandler = async (req, res) => {
       timestamp: new Date()
     });
 
-    // Upsert chat session with topic
+    // Upsert chat session with topic (only once)
     await db.collection('chat_sessions').updateOne(
       { sessionId },
       {
         $set: {
-          topic,
+          topic: topicTitle,
           updatedAt: new Date()
         },
         $setOnInsert: {

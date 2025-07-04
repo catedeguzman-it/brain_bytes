@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import styles from '../styles/Sidebar.module.css'; // adjust the path as needed
+import styles from '../styles/Sidebar.module.css';
 
 export default function Sidebar({ userId, onSelectSession }) {
   const [sessions, setSessions] = useState([]);
@@ -12,11 +12,15 @@ export default function Sidebar({ userId, onSelectSession }) {
       .then(data => setSessions(data.sessions || []));
   }, [userId]);
 
-  const topics = [...new Set(sessions.map(s => s.topic || 'Untitled'))];
+  // ✅ Extract only the main category for filtering
+  const topics = [...new Set(
+    sessions.map(s => (s.topic?.split(' – ')[0]) || 'General')
+  )];
 
+  // ✅ Filter by category only
   const filteredSessions = filter === 'All'
     ? sessions
-    : sessions.filter(s => (s.topic || 'Untitled') === filter);
+    : sessions.filter(s => s.topic?.startsWith(filter));
 
   return (
     <div className={styles.sidebarWrapper}>
@@ -34,7 +38,7 @@ export default function Sidebar({ userId, onSelectSession }) {
 
       {filteredSessions.map((session) => (
         <button
-          key={session._id}
+          key={session.sessionId || session._id}
           onClick={() => onSelectSession(session.sessionId || session._id)}
           className={styles.sessionButton}
         >

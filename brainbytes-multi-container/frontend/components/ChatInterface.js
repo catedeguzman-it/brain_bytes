@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import styles from '../styles/ChatInterface.module.css';
-import NavBar from '../components/NavBar';
 import Sidebar from '../components/Sidebar';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
@@ -19,7 +18,6 @@ export default function ChatInterface() {
   const [userId, setUserId] = useState(null);
   const messagesEndRef = useRef(null);
 
-  // ✅ Check authentication
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
@@ -34,15 +32,10 @@ export default function ChatInterface() {
     }
   }, [router]);
 
-  // ✅ Setup sessionId once router is ready and auth is checked
   useEffect(() => {
     if (!authChecked || !router.isReady) return;
 
-    let sid = routeSessionId;
-
-    if (!sid) {
-      sid = localStorage.getItem('sessionId');
-    }
+    let sid = routeSessionId || localStorage.getItem('sessionId');
 
     if (!sid) {
       sid = crypto.randomUUID();
@@ -52,46 +45,28 @@ export default function ChatInterface() {
     setSessionId(sid);
   }, [authChecked, routeSessionId, router.isReady]);
 
-  const loadHistory = async (sessionId) => {
-    setIsLoading(true);
-    try {
-      const res = await fetch(`${API_BASE}/api/chat/history/${sessionId}`);
-      const data = await res.json();
+  // Load session-based message history
+  useEffect(() => {
+    if (!sessionId) return;
+    const loadHistory = async () => {
+      setIsLoading(true);
+      try {
+        const res = await fetch(`${API_BASE}/api/chat/history/${sessionId}`);
+        const data = await res.json();
+        setMessages(Array.isArray(data.messages) ? data.messages : []);
+      } catch (err) {
+        console.error('Error loading history:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadHistory();
+  }, [sessionId]);
 
-      setMessages(Array.isArray(data.messages) ? data.messages : []);
-    } catch (err) {
-      console.error('Error loading history:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-    
-    useEffect(() => {
-      if (!userId) return;
-
-      const loadHistory = async () => {
-        setIsLoading(true);
-        try {
-          const res = await fetch(`${API_BASE}/api/chat/history/user/${userId}`);
-          const data = await res.json();
-          setMessages(Array.isArray(data.messages) ? data.messages : []);
-        } catch (err) {
-          console.error('Error loading history:', err);
-        } finally {
-          setIsLoading(false);
-        }
-      };
-
-      loadHistory();
-    }, [userId]);
-
-  // ✅ Scroll to bottom on new message
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // ✅ Send message
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (input.trim() === '') return;
@@ -154,73 +129,60 @@ export default function ChatInterface() {
     router.push('/dashboard');
   };
 
-    if (!authChecked) return null;
+  if (!authChecked) return null;
 
   return (
-    <>
-      <NavBar
-        onLogout={() => {
-          localStorage.removeItem('token');
-          localStorage.removeItem('userId');
-          localStorage.removeItem('sessionId');
-          router.push('/login');
+    <div style={{ display: 'flex', height: 'calc(100vh - 60px)' }}>
+      <Sidebar
+        userId={userId}
+        onSelectSession={(id) => {
+          localStorage.setItem('sessionId', id);
+          router.push(`/chat?sessionId=${id}`);
         }}
-        onNewChat={handleNewChat}
-        onDashboard={goToDashboard}
       />
-
-      <div style={{ display: 'flex', height: 'calc(100vh - 60px)' }}>
-        <Sidebar
-          userId={userId}
-          onSelectSession={(id) => {
-            localStorage.setItem('sessionId', id);
-            router.push(`/chat?sessionId=${id}`);
-          }}
-        />
-        <div className={styles.chatWrapper} style={{ flex: 1 }}>
-          <div className={styles.chatContainer}>
-            <div className={styles.messagesContainer}>
-              {messages.map((msg) => (
-                <div
-                  key={msg._id || msg.id}
-                  className={`${styles.message} ${
-                    msg.sender === 'user' ? styles.userMessage : styles.aiMessage
-                  }`}
-                >
-                  <div className={styles.messageContent}>{msg.text}</div>
-                  <div className={styles.messageTimestamp}>
-                    {new Date(msg.timestamp).toLocaleTimeString()}
-                  </div>
+      <div className={styles.chatWrapper} style={{ flex: 1 }}>
+        <div className={styles.chatContainer}>
+          <div className={styles.messagesContainer}>
+            {messages.map((msg) => (
+              <div
+                key={msg._id || msg.id}
+                className={`${styles.message} ${
+                  msg.sender === 'user' ? styles.userMessage : styles.aiMessage
+                }`}
+              >
+                <div className={styles.messageContent}>{msg.text}</div>
+                <div className={styles.messageTimestamp}>
+                  {new Date(msg.timestamp).toLocaleTimeString()}
                 </div>
-              ))}
+              </div>
+            ))}
 
-              {isLoading && (
-                <div className={`${styles.message} ${styles.aiMessage}`}>
-                  <div className={styles.typingIndicator}>
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                  </div>
+            {isLoading && (
+              <div className={`${styles.message} ${styles.aiMessage}`}>
+                <div className={styles.typingIndicator}>
+                  <span></span>
+                  <span></span>
+                  <span></span>
                 </div>
-              )}
-              <div ref={messagesEndRef} />
-            </div>
-
-            <form onSubmit={handleSendMessage} className={styles.inputContainer}>
-              <input
-                type="text"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Type your message here..."
-                className={styles.messageInput}
-              />
-              <button type="submit" className={styles.sendButton}>
-                Send
-              </button>
-            </form>
+              </div>
+            )}
+            <div ref={messagesEndRef} />
           </div>
+
+          <form onSubmit={handleSendMessage} className={styles.inputContainer}>
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Type your message here..."
+              className={styles.messageInput}
+            />
+            <button type="submit" className={styles.sendButton}>
+              Send
+            </button>
+          </form>
         </div>
       </div>
-    </>
+    </div>
   );
 }
