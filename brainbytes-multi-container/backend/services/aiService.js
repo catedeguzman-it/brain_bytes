@@ -2,7 +2,8 @@ const fetch = require('node-fetch');
 
 const MAX_LENGTH = 1000;
 
-// Initialize our AI service
+const responseCache = {};
+
 const initializeAI = () => {
   console.log('✅ Groq AI service initialized');
   if (!process.env.GROQ_API_KEY) {
@@ -11,54 +12,38 @@ const initializeAI = () => {
 };
 
 async function generateResponse(question) {
-  const lowerQuestion = question.toLowerCase();
-
-  const isMath = lowerQuestion.includes('calculate') || lowerQuestion.includes('math') || lowerQuestion.includes('1+1') || /[+\-*\/=]/.test(lowerQuestion);
-  const isHistory = lowerQuestion.includes('history') || lowerQuestion.includes('capital') || lowerQuestion.includes('philippines') || lowerQuestion.includes('president');
-  const isScience = lowerQuestion.includes('science') || lowerQuestion.includes('evaporation') || lowerQuestion.includes('precipitation') || lowerQuestion.includes('water') || lowerQuestion.includes('chemical');
-
-  let category = 'General';
-  if (isMath) category = 'Math';
-  if (isHistory) category = 'History';
-  if (isScience) category = 'Science';
-
-  // Hardcoded fallback responses
-  if (lowerQuestion === 'what is 1+1' || lowerQuestion === '1+1') {
-    return { category: 'Math', response: "The answer to 1+1 is 2." };
-  }
-  if (lowerQuestion === 'what is evaporation') {
-    return {
-      category: 'Science',
-      response: "Evaporation is the process where liquid water changes into vapor due to heat."
-    };
-  }
-  if (lowerQuestion === 'what is science') {
-    return {
-      category: 'science',
-      response: "Science is the systematic study of the natural world through observation and experiment."
-    };
-  }
-
-  const isFrustrated = lowerQuestion.includes("i don't understand") || lowerQuestion.includes('confused') || lowerQuestion.includes('hard') || lowerQuestion.includes('difficult');
-  if (isFrustrated) {
-    return {
-      category: 'Support',
-      response: "It’s okay to feel stuck. Let’s break it down together. Where would you like to start?"
-    };
+    const cacheKey = question.trim().toLowerCase();
+  if (responseCache[cacheKey]) {
+    console.log('⚡ Returning cached response for:', cacheKey);
+    return responseCache[cacheKey];
   }
 
   const GROQ_API_KEY = process.env.GROQ_API_KEY;
-  const API_URL = "https://api.groq.com/openai/v1/chat/completions";
-
   if (!GROQ_API_KEY) {
-    return { category, response: "The AI service is not configured. Please set the GROQ_API_KEY in your environment." };
+    return {
+      category: 'General',
+      topic: 'General',
+      response: "The AI service is not configured. Please set the GROQ_API_KEY in your environment."
+    };
   }
+
+  const prompt = `
+You are an intelligent AI tutor. Given a student's question, respond in this strict JSON format:
+
+{
+  "category": "Math | Science | English | History | Filipino | Support | General",
+  "topic": "Short and specific topic name (e.g., 'Multiplication', 'Evaporation')",
+  "response": "A helpful, concise, and accurate answer to the question"
+}
+
+The question is: "${question}"
+`;
 
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-    const response = await fetch(API_URL, {
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       signal: controller.signal,
       headers: {
@@ -68,64 +53,134 @@ async function generateResponse(question) {
       body: JSON.stringify({
         model: "meta-llama/llama-4-scout-17b-16e-instruct",
         messages: [
-          { role: "system", content: "You are a helpful tutor. Answer concisely and clearly." },
-          { role: "user", content: question }
+          { role: "system", content: "You are a helpful tutor. Return JSON only." },
+          { role: "user", content: prompt }
         ],
         temperature: 0.7
       })
     });
 
     clearTimeout(timeoutId);
-
-    const status = response.status;
     const raw = await response.text();
-    console.log("🔵 Status:", status);
-    console.log("🟢 Raw text:", raw);
-
-    if (status !== 200) {
-      return { category, response: `The AI service returned status ${status}: ${raw}` };
-    }
-
     const result = JSON.parse(raw);
-    let reply = result.choices?.[0]?.message?.content?.trim() || '';
 
-    if (reply.length > MAX_LENGTH) {
-      reply = reply.slice(0, MAX_LENGTH - 3) + '...';
+    const content = result.choices?.[0]?.message?.content?.trim();
+
+    if (!content) throw new Error('Empty response from AI');
+
+    let parsed;
+        try {
+      parsed = JSON.parse(content);
+    } catch (err) {
+      console.warn("⚠️ AI response not valid JSON. Using fallback.");
+      const fallback = fallbackCategorization(question);
+      responseCache[cacheKey] = fallback;
+      return fallback;
     }
 
-    return { category, response: reply };
+    const resultObj = {
+      category: parsed.category || 'General',
+      topic: parsed.topic || 'General',
+      response: parsed.response?.slice(0, MAX_LENGTH) || 'No response provided.'
+    };
+    responseCache[cacheKey] = resultObj;
+    return resultObj;
 
   } catch (error) {
-    console.error("❌ Error calling Groq API:", error);
-    return { category, response: getDetailedResponse(category, question) };
+    console.error('❌ Error generating response:', error);
+    const fallback = fallbackCategorization(question);
+    responseCache[cacheKey] = fallback;
+    return fallback;
   }
 }
 
-// Fallback responses
-function getDetailedResponse(category, question) {
-  const lowerQuestion = question.toLowerCase();
+function fallbackCategorization(question) {
+  const lower = question.toLowerCase();
+  let category = 'General';
+  let topic = 'General';
 
-  if (lowerQuestion === 'what is 1+1' || lowerQuestion === '1+1') return "The answer to 1+1 is 2.";
-  if (lowerQuestion === 'what is evaporation') return "Evaporation is the process where liquid water turns into vapor.";
-  if (lowerQuestion === 'what is science') return "Science is the systematic study of the natural world.";
-
-  if (category === 'science') {
-    if (lowerQuestion.includes('precipitation')) return "Precipitation is water released from clouds as rain, snow, sleet, or hail.";
-    if (lowerQuestion.includes('evaporation')) return "Evaporation is the process where liquid water turns into vapor.";
-    return "That's an interesting science question! Please provide more details.";
+  // 📐 MATH
+  if (
+    lower.includes('add') || lower.includes('+') ||
+    lower.includes('subtract') || lower.includes('-') ||
+    lower.includes('multiply') || lower.includes('x') || lower.includes('*') ||
+    lower.includes('divide') || lower.includes('/') ||
+    lower.match(/\d+\s*[+\-*/x]\s*\d+/)
+  ) {
+    category = 'Math';
+    if (lower.includes('add') || lower.includes('+')) topic = 'Addition';
+    else if (lower.includes('subtract') || lower.includes('-')) topic = 'Subtraction';
+    else if (lower.includes('multiply') || lower.includes('x') || lower.includes('*')) topic = 'Multiplication';
+    else if (lower.includes('divide') || lower.includes('/')) topic = 'Division';
+    else topic = 'Math Problem';
   }
 
-  if (category === 'math') {
-    return "I can help with your math question. Please provide more details or a specific equation.";
+  // 🔬 SCIENCE
+  else if (
+    lower.includes('evaporation') || lower.includes('condensation') ||
+    lower.includes('water cycle') || lower.includes('photosynthesis') ||
+    lower.includes('states of matter') || lower.includes('solid') ||
+    lower.includes('liquid') || lower.includes('gas')
+  ) {
+    category = 'Science';
+    if (lower.includes('evaporation')) topic = 'Evaporation';
+    else if (lower.includes('photosynthesis')) topic = 'Photosynthesis';
+    else if (lower.includes('states of matter') || lower.includes('solid') || lower.includes('liquid') || lower.includes('gas')) topic = 'States of Matter';
+    else topic = 'General Science';
   }
 
-  if (category === 'history') {
-    if (lowerQuestion.includes('capital of the philippines')) return "The capital of the Philippines is Manila.";
-    if (lowerQuestion.includes('fish in filipino')) return "The word for 'fish' in Filipino is 'isda'.";
-    return "Interesting history question! Can you provide more detail?";
+  // 📚 ENGLISH
+  else if (
+    lower.includes('grammar') || lower.includes('synonym') || lower.includes('antonym') ||
+    lower.includes('verb') || lower.includes('adjective') || lower.includes('punctuation') ||
+    lower.includes('sentence') || lower.includes('essay') || lower.includes('paragraph')
+  ) {
+    category = 'English';
+    if (lower.includes('synonym')) topic = 'Synonyms';
+    else if (lower.includes('verb')) topic = 'Verbs';
+    else if (lower.includes('grammar')) topic = 'Grammar';
+    else topic = 'English Topic';
   }
 
-  return "I'm not sure I understand. Could you rephrase or be more specific?";
+  // 🕰️ HISTORY
+  else if (
+    lower.includes('president') || lower.includes('philippine independence') ||
+    lower.includes('world war') || lower.includes('revolution') || lower.includes('heroes')
+  ) {
+    category = 'History';
+    if (lower.includes('president')) topic = 'Presidents';
+    else if (lower.includes('independence')) topic = 'Philippine Independence';
+    else if (lower.includes('world war')) topic = 'World Wars';
+    else topic = 'Historical Topic';
+  }
+
+  // 🏛️ FILIPINO
+  else if (
+    lower.includes('salita') || lower.includes('pangungusap') || lower.includes('panitikan') ||
+    lower.includes('kasaysayan') || lower.includes('kasingkahulugan') || lower.includes('kasalungat')
+  ) {
+    category = 'Filipino';
+    if (lower.includes('kasingkahulugan')) topic = 'Kasingkahulugan';
+    else if (lower.includes('kasalungat')) topic = 'Kasalungat';
+    else if (lower.includes('pangungusap')) topic = 'Pangungusap';
+    else topic = 'Paksa sa Filipino';
+  }
+
+  // 🧠 SUPPORT
+  else if (
+    lower.includes("i don't understand") || lower.includes('confused') ||
+    lower.includes('hard') || lower.includes('difficult') ||
+    lower.includes('can you help') || lower.includes('explain again')
+  ) {
+    category = 'Support';
+    topic = 'Encouragement';
+  }
+
+  return {
+    category,
+    topic,
+    response: "Here's a general answer. Sorry, I couldn't determine the exact topic."
+  };
 }
 
 module.exports = {
