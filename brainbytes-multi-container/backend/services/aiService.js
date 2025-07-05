@@ -1,20 +1,39 @@
 const fetch = require('node-fetch');
-
 const MAX_LENGTH = 1000;
-
 const responseCache = {};
+
+const CATEGORIES = [
+  'Math', 'Science', 'English', 'History', 'Filipino', 'Geography',
+  'Technology', 'Arts', 'Music', 'Health', 'Civics', 'Support', 'General'
+];
+
+// Optional: Basic keyword pre-check fallback
+function detectCategoryFromKeywords(question) {
+  const lower = question.toLowerCase();
+  if (lower.includes('president') || lower.includes('rizal') || lower.includes('revolution'))
+    return 'History';
+  if (lower.includes('philippines') || lower.includes('manila') || lower.includes('region'))
+    return 'Geography';
+  if (lower.includes('salita') || lower.includes('pangungusap') || lower.includes('panitikan'))
+    return 'Filipino';
+  if (lower.includes('math') || /\d+\s*[\+\-\*\/]\s*\d+/.test(lower))
+    return 'Math';
+  if (lower.includes('science') || lower.includes('evaporation') || lower.includes('atom'))
+    return 'Science';
+  return 'General';
+}
 
 const initializeAI = () => {
   console.log('✅ Groq AI service initialized');
   if (!process.env.GROQ_API_KEY) {
-    console.warn('⚠️ Warning: GROQ_API_KEY environment variable not set. API calls may fail.');
+    console.warn('⚠️ GROQ_API_KEY is not set.');
   }
 };
 
 async function generateResponse(question) {
-    const cacheKey = question.trim().toLowerCase();
+  const cacheKey = question.trim().toLowerCase();
   if (responseCache[cacheKey]) {
-    console.log('⚡ Returning cached response for:', cacheKey);
+    console.log('⚡ Using cached result for:', cacheKey);
     return responseCache[cacheKey];
   }
 
@@ -23,20 +42,23 @@ async function generateResponse(question) {
     return {
       category: 'General',
       topic: 'General',
-      response: "The AI service is not configured. Please set the GROQ_API_KEY in your environment."
+      response: "AI configuration missing. Please set GROQ_API_KEY."
     };
   }
 
+  const preCategory = detectCategoryFromKeywords(question);
+  console.log(`🔍 [Pre-Detected] Category via keyword: ${preCategory}`);
+
   const prompt = `
-You are an intelligent AI tutor. Given a student's question, respond in this strict JSON format:
+You are an expert AI tutor for Filipino students. Respond in JSON format only:
 
 {
-  "category": "Math | Science | English | History | Filipino | Support | General",
-  "topic": "Short and specific topic name (e.g., 'Multiplication', 'Evaporation')",
-  "response": "A helpful, concise, and accurate answer to the question"
+  "category": "One of: ${CATEGORIES.join(' | ')}",
+  "topic": "Short specific topic (e.g., 'Photosynthesis', 'Fractions', 'Philippine Presidents')",
+  "response": "A clear and factual explanation tailored for students in the Philippines"
 }
 
-The question is: "${question}"
+Question: "${question}"
 `;
 
   try {
@@ -53,41 +75,45 @@ The question is: "${question}"
       body: JSON.stringify({
         model: "meta-llama/llama-4-scout-17b-16e-instruct",
         messages: [
-          { role: "system", content: "You are a helpful tutor. Return JSON only." },
+          { role: "system", content: "You are a helpful tutor. Respond only with JSON." },
           { role: "user", content: prompt }
         ],
-        temperature: 0.7
+        temperature: 0.3,
+        max_tokens: 400
       })
     });
 
     clearTimeout(timeoutId);
     const raw = await response.text();
-    const result = JSON.parse(raw);
+    const parsedRaw = JSON.parse(raw);
+    const content = parsedRaw.choices?.[0]?.message?.content?.trim();
 
-    const content = result.choices?.[0]?.message?.content?.trim();
-
-    if (!content) throw new Error('Empty response from AI');
+    if (!content) throw new Error("Empty response from LLM");
 
     let parsed;
-        try {
-      parsed = JSON.parse(content);
+    try {
+      const jsonMatch = content.match(/\{[\s\S]*?\}/);
+      parsed = JSON.parse(jsonMatch?.[0] || '{}');
     } catch (err) {
-      console.warn("⚠️ AI response not valid JSON. Using fallback.");
+      console.warn("⚠️ Failed to parse JSON from LLM. Falling back.");
       const fallback = fallbackCategorization(question);
       responseCache[cacheKey] = fallback;
       return fallback;
     }
 
-    const resultObj = {
-      category: parsed.category || 'General',
+    const finalCategory = CATEGORIES.includes(parsed.category) ? parsed.category : preCategory || 'General';
+    const formatted = {
+      category: finalCategory,
       topic: parsed.topic || 'General',
-      response: parsed.response?.slice(0, MAX_LENGTH) || 'No response provided.'
+      response: (parsed.response || 'No answer provided.').slice(0, MAX_LENGTH)
     };
-    responseCache[cacheKey] = resultObj;
-    return resultObj;
+
+    console.log(`✅ [LLM Parsed] Category: ${formatted.category}, Topic: ${formatted.topic}`);
+    responseCache[cacheKey] = formatted;
+    return formatted;
 
   } catch (error) {
-    console.error('❌ Error generating response:', error);
+    console.error("❌ AI call failed:", error);
     const fallback = fallbackCategorization(question);
     responseCache[cacheKey] = fallback;
     return fallback;
@@ -95,91 +121,11 @@ The question is: "${question}"
 }
 
 function fallbackCategorization(question) {
-  const lower = question.toLowerCase();
-  let category = 'General';
-  let topic = 'General';
-
-  // 📐 MATH
-  if (
-    lower.includes('add') || lower.includes('+') ||
-    lower.includes('subtract') || lower.includes('-') ||
-    lower.includes('multiply') || lower.includes('x') || lower.includes('*') ||
-    lower.includes('divide') || lower.includes('/') ||
-    lower.match(/\d+\s*[+\-*/x]\s*\d+/)
-  ) {
-    category = 'Math';
-    if (lower.includes('add') || lower.includes('+')) topic = 'Addition';
-    else if (lower.includes('subtract') || lower.includes('-')) topic = 'Subtraction';
-    else if (lower.includes('multiply') || lower.includes('x') || lower.includes('*')) topic = 'Multiplication';
-    else if (lower.includes('divide') || lower.includes('/')) topic = 'Division';
-    else topic = 'Math Problem';
-  }
-
-  // 🔬 SCIENCE
-  else if (
-    lower.includes('evaporation') || lower.includes('condensation') ||
-    lower.includes('water cycle') || lower.includes('photosynthesis') ||
-    lower.includes('states of matter') || lower.includes('solid') ||
-    lower.includes('liquid') || lower.includes('gas')
-  ) {
-    category = 'Science';
-    if (lower.includes('evaporation')) topic = 'Evaporation';
-    else if (lower.includes('photosynthesis')) topic = 'Photosynthesis';
-    else if (lower.includes('states of matter') || lower.includes('solid') || lower.includes('liquid') || lower.includes('gas')) topic = 'States of Matter';
-    else topic = 'General Science';
-  }
-
-  // 📚 ENGLISH
-  else if (
-    lower.includes('grammar') || lower.includes('synonym') || lower.includes('antonym') ||
-    lower.includes('verb') || lower.includes('adjective') || lower.includes('punctuation') ||
-    lower.includes('sentence') || lower.includes('essay') || lower.includes('paragraph')
-  ) {
-    category = 'English';
-    if (lower.includes('synonym')) topic = 'Synonyms';
-    else if (lower.includes('verb')) topic = 'Verbs';
-    else if (lower.includes('grammar')) topic = 'Grammar';
-    else topic = 'English Topic';
-  }
-
-  // 🕰️ HISTORY
-  else if (
-    lower.includes('president') || lower.includes('philippine independence') ||
-    lower.includes('world war') || lower.includes('revolution') || lower.includes('heroes')
-  ) {
-    category = 'History';
-    if (lower.includes('president')) topic = 'Presidents';
-    else if (lower.includes('independence')) topic = 'Philippine Independence';
-    else if (lower.includes('world war')) topic = 'World Wars';
-    else topic = 'Historical Topic';
-  }
-
-  // 🏛️ FILIPINO
-  else if (
-    lower.includes('salita') || lower.includes('pangungusap') || lower.includes('panitikan') ||
-    lower.includes('kasaysayan') || lower.includes('kasingkahulugan') || lower.includes('kasalungat')
-  ) {
-    category = 'Filipino';
-    if (lower.includes('kasingkahulugan')) topic = 'Kasingkahulugan';
-    else if (lower.includes('kasalungat')) topic = 'Kasalungat';
-    else if (lower.includes('pangungusap')) topic = 'Pangungusap';
-    else topic = 'Paksa sa Filipino';
-  }
-
-  // 🧠 SUPPORT
-  else if (
-    lower.includes("i don't understand") || lower.includes('confused') ||
-    lower.includes('hard') || lower.includes('difficult') ||
-    lower.includes('can you help') || lower.includes('explain again')
-  ) {
-    category = 'Support';
-    topic = 'Encouragement';
-  }
-
+  const cat = detectCategoryFromKeywords(question);
   return {
-    category,
-    topic,
-    response: "Here's a general answer. Sorry, I couldn't determine the exact topic."
+    category: cat,
+    topic: 'General',
+    response: "I'm not quite sure, but this may relate to " + cat + ". Can you clarify your question?"
   };
 }
 
