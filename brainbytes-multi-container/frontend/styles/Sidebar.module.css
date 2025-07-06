@@ -114,3 +114,44 @@
   outline: none;
   background-color: #ffebee;
 }
+
+.clickableArea {
+  flex: 1;
+  cursor: pointer;
+  padding: 6px 10px;
+  transition: background 0.2s ease;
+}
+
+.clickableArea:hover {
+  background-color: #f0f0f0;
+  border-radius: 6px;
+}
+
+.sessionButton {
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 2px;
+}
+
+.previewText {
+  font-size: 0.85rem;
+  color: #444;
+  line-height: 1.4;
+  white-space: normal;
+  overflow: hidden;
+
+  display: -webkit-box;
+  display: box; /* standard fallback */
+  -webkit-box-orient: vertical;
+  box-orient: vertical; /* standard fallback */
+  -webkit-line-clamp: 3;
+  line-clamp: 3; /* standard syntax */
+}
+
+.previewText mark {
+  background-color: #ffe58f;
+  color: #000;
+  font-weight: bold;
+  padding: 0 2px;
+  border-radius: 2px;
+}

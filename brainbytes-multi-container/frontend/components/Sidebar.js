@@ -9,12 +9,20 @@ export default function Sidebar({ userId, onSelectSession }) {
   const [search, setSearch] = useState('');
   const [openMenuId, setOpenMenuId] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null); // { sessionId, topic }
+  const [allMessages, setAllMessages] = useState([]);
 
   useEffect(() => {
     if (!userId) return;
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/chat/sessions/${userId}`)
       .then(res => res.json())
       .then(data => setSessions(data.sessions || []));
+  }, [userId]);
+
+  useEffect(() => {
+    if (!userId) return;
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/chat/history/user/${userId}`)
+      .then(res => res.json())
+      .then(data => setAllMessages(data.messages || []));
   }, [userId]);
 
   const handleDeleteConfirmed = async () => {
@@ -36,8 +44,16 @@ export default function Sidebar({ userId, onSelectSession }) {
   )];
 
   const filteredSessions = sessions.filter(s => {
+    const sid = s.sessionId || s._id;
     const matchesTopic = filter === 'All' || s.topic?.startsWith(filter);
-    const matchesSearch = s.topic?.toLowerCase().includes(search.toLowerCase());
+
+    const sessionMessages = allMessages.filter(m => m.sessionId === sid);
+    const matchesMessageContent = sessionMessages.some(m =>
+      m.text?.toLowerCase().includes(search.toLowerCase())
+    );
+
+    const matchesSearch = s.topic?.toLowerCase().includes(search.toLowerCase()) || matchesMessageContent;
+
     return matchesTopic && matchesSearch;
   });
 
@@ -64,42 +80,69 @@ export default function Sidebar({ userId, onSelectSession }) {
         ))}
       </select>
 
-      {filteredSessions.map((session) => {
-        const sid = session.sessionId || session._id;
-        return (
-          <div
-            key={sid}
-            className={styles.sessionItem}
-            onMouseLeave={() => setOpenMenuId(null)}
-          >
-            <button
-              className={styles.sessionButton}
-              onClick={() => onSelectSession(sid)}
-            >
-              {session.topic || 'Untitled Chat'}
-            </button>
+    {filteredSessions.map((session) => {
+      const sid = session.sessionId || session._id;
 
-            <div
-              className={styles.menuTrigger}
-              onClick={() =>
-                setOpenMenuId((prev) => (prev === sid ? null : sid))
-              }
-            >
-              ⋮
+      const preview = allMessages.find(
+        (m) =>
+          m.sessionId === sid &&
+          m.text?.toLowerCase().includes(search.toLowerCase())
+      );
+
+      return (
+        <div
+          key={sid}
+          className={styles.sessionItem}
+          onMouseLeave={() => setOpenMenuId(null)}
+        >
+          {/* Whole clickable container */}
+          <div
+            className={styles.clickableArea}
+            onClick={() => onSelectSession(sid)}
+          >
+            <div className={styles.sessionButton}>
+              {session.topic || 'Untitled Chat'}
             </div>
 
-            {openMenuId === sid && (
-              <div className={modalStyles.dropdownMenu}>
-                <button onClick={() =>
-                  setConfirmDelete({ sessionId: sid, topic: session.topic })
-                }>
-                  Delete
-                </button>
+            {search && preview?.text && (
+              <div className={styles.previewText}>
+                <span
+                  dangerouslySetInnerHTML={{
+                    __html: preview.text.replace(
+                      new RegExp(`(${search})`, 'gi'),
+                      '<mark>$1</mark>'
+                    ),
+                  }}
+                />
               </div>
             )}
           </div>
-        );
-      })}
+
+          <div
+            className={styles.menuTrigger}
+            onClick={(e) => {
+              e.stopPropagation(); // prevent triggering session open
+              setOpenMenuId((prev) => (prev === sid ? null : sid));
+            }}
+          >
+            ⋮
+          </div>
+
+          {openMenuId === sid && (
+            <div className={modalStyles.dropdownMenu}>
+              <button
+                onClick={() =>
+                  setConfirmDelete({ sessionId: sid, topic: session.topic })
+                }
+              >
+                Delete
+              </button>
+            </div>
+          )}
+        </div>
+      );
+    })}
+
 
       {/* Modal placed outside map */}
       <ConfirmDeleteModal
@@ -111,5 +154,3 @@ export default function Sidebar({ userId, onSelectSession }) {
     </div>
   );
 }
-// This component renders a sidebar with chat sessions, allowing users to filter, search, and delete sessions.
-// It uses a modal for confirming deletions and fetches session data from an API endpoint.  
