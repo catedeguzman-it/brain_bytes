@@ -88,4 +88,23 @@ router.get('/chat/sessions/:userId', async (req, res) => {
   }
 });
 
+// DELETE /chat/session/:sessionId
+router.delete('/chat/session/:sessionId', async (req, res) => {
+  const db = getDb();
+  const { sessionId } = req.params;
+
+  try {
+    // Delete all messages for the session
+    await db.collection('messages').deleteMany({ sessionId });
+
+    // Optionally delete session record from chat_sessions
+    await db.collection('chat_sessions').deleteOne({ sessionId });
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('❌ Failed to delete session:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 module.exports = router;
