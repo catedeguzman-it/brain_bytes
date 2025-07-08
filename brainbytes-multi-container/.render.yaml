@@ -1,22 +1,26 @@
 services:
   - type: web
-    name: brainbytes
+    name: brainbytes-backend
     env: node
-    rootDir: .
-    buildCommand: |
-      cd frontend
-      npm install
-      npm run build
-      npm run export
-      cd ../backend
-      npm install
-    startCommand: node backend/server.js
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node server.js
     envVars:
       - key: PORT
         value: 10000
       - key: MONGO_URI
         value: mongodb+srv://Cate1202:4CF.bz5rxPERc8D@cluster0.mongodb.net/brain-bytes?retryWrites=true&w=majority
       - key: CLIENT_ORIGIN
-        value: https://brainbytes.onrender.com
+        value: https://brainbytes-frontend.onrender.com
       - key: GROQ_API_KEY
         sync: false
+
+  - type: web
+    name: brainbytes-frontend
+    env: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build && npm run export
+    staticPublishPath: out
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        value: https://brainbytes-backend.onrender.com
