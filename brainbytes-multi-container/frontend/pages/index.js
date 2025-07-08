@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import ChatInterface from '../components/ChatInterface';
 import NavBar from '../components/NavBar';
 import LoginForm from '../components/LoginForm';
@@ -6,6 +7,7 @@ import RegisterForm from '../components/RegisterForm';
 import styles from '../styles/Index.module.css'; // ✅ Import CSS module
 
 export default function Home() {
+  const router = useRouter();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [activeForm, setActiveForm] = useState('login');
   const [loginHandler, setLoginHandler] = useState(null);
@@ -20,7 +22,7 @@ export default function Home() {
     localStorage.setItem('hasRegistered', 'true');
     setActiveForm('login');
   };
-  const handleDashboard = () => window.location.href = '/dashboard';
+  const handleDashboard = () => router.push('/dashboard');
   const handleNewChat = () => {
     const newSessionId = crypto.randomUUID();
     localStorage.setItem('sessionId', newSessionId);

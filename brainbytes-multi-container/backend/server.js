@@ -52,7 +52,7 @@ app.get('*', (req, res) => {
 // ───────────────────────
 async function startServer() {
   const db = await connectToDatabase();
-  initializeAI(); // start Hugging Face integration log
+  initializeAI();
   app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
   });
