@@ -9,7 +9,7 @@ services:
       - key: PORT
         value: 10000
       - key: MONGO_URI
-        value: mongodb+srv://Cate1202:4CF.bz5rxPERc8D@cluster0.sfsf6.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
+        value: MONGO_URI=mongodb://Cate1202:4CF.bz5rxPERc8D@cluster0-shard-00-00.sfsf6.mongodb.net:27017,cluster0-shard-00-01.sfsf6.mongodb.net:27017,cluster0-shard-00-02.sfsf6.mongodb.net:27017/?ssl=true&replicaSet=atlas-XXXXXX-shard-0&authSource=admin&retryWrites=true&w=majority
       - key: CLIENT_ORIGIN
         value: https://brainbytes-frontend.onrender.com
       - key: GROQ_API_KEY
