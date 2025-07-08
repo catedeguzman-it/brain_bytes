@@ -9,7 +9,7 @@ services:
       - key: PORT
         value: 10000
       - key: MONGO_URI
-        value: mongodb+srv://Cate1202:4CF.bz5rxPERc8D@cluster0.mongodb.net/brain-bytes?retryWrites=true&w=majority
+        value: mongodb+srv://Cate1202:4CF.bz5rxPERc8D@cluster0.sfsf6.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
       - key: CLIENT_ORIGIN
         value: https://brainbytes-frontend.onrender.com
       - key: GROQ_API_KEY
