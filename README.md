@@ -6,7 +6,6 @@
 BrainBytes is an AI-powered tutoring platform designed to provide accessible academic assistance to Filipino students. This project implements the platform using modern DevOps practices and containerization.
 
 ## Team Members
-- John Louie Alova - Team Lead - [lr.jlalova@mmdc.mcl.edu.ph]
 - Jennifer Cerio - Backend Developer - [lr.jecerio@mmdc.mcl.edu.ph]
 - Catherine De Guzman - Frontend Developer - [lr.cdguzman@mmdc.mcl.edu.ph]
 - Krisha Danessa Jusay - DevOps Engineer - [lr.kdjusay@mmdc.mcl.edu.ph]
@@ -36,7 +35,6 @@ Development Environment Setup Verification
 
 |      Team Member      | Docker Installed | Git Installed | VS Code Installed | Can Run Hello World Container |
 |-----------------------|------------------|---------------|-------------------|-------------------------------|
-| Alova, John Louie     | ✓                | ✓            | ✓                 | ✓                            |
 | Cerio, Jennifer       | ✓                | ✓            | ✓                 | ✓                            |
 | De Guzman, Catherine  | ✓                | ✓            | ✓                 | ✓                            |
 | Jusay, Krisha Danessa | ✓                | ✓            | ✓                 | ✓                            |
@@ -58,23 +56,23 @@ Week 1: Container Basics
 
 **Catherine De Guzman**: Set up project repository and basic documentation <br/>
 **Jennifer Cerio**: Research and document containerization approach <br/>
-**Alova, Cerio, De Guzman, Jusay**: Complete Docker installation and verification <br/>
+**Cerio, De Guzman, Jusay**: Complete Docker installation and verification <br/>
 
 Week 2: Platform Development
 
 **Catherine De Guzman**: Implement frontend container (Next.js) <br/>
 **Jennifer Cerio**: Implement backend container (Node.js) <br/>
-**Krisha Jusay**: Configure MongoDB Atlas and connection
+**Catherine De Guzman**: Configure MongoDB Atlas and connection
 
 Week 3: Platform Development (continued)
 
 **Catherine De Guzman**: Implement chat interface frontend <br/>
 **Jennifer Cerio**: Implement backend API endpoints <br/>
-**[Team Member Name]**: Set up container networking
+**Cerio, De Guzman**: Set up container networking
 
 Week 4: Integration and Testing
 
-**[Team Member Name]**: Integrate AI model <br/>
-**[Team Member Name]**: Implement message history storage <br/>
-**[Team Member Name]**: Create project documentation <br/>
-**All Team Members**: Final testing and preparation for submission
+**Jennifer Cerio**: Integrate AI model <br/>
+**Jennifer Cerio**: Implement message history storage <br/>
+**Catherine De Guzman**: Create project documentation <br/>
+**Catherine De Guzman**: Final testing and preparation for submission
