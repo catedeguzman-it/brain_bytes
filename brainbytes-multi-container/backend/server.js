@@ -36,17 +36,6 @@ app.use('/api', messageRoutes);
 
 // ──────── HEALTH CHECK ────────
 app.get('/health', (req, res) => res.send('OK'));
-
-// ───────────────────────
-// SERVE FRONTEND STATIC BUILD
-// ───────────────────────
-app.use(express.static(path.join(__dirname, '../frontend/out')));
-
-// Fallback: send index.html for unmatched routes (SPA behavior)
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/out/index.html'));
-});
-
 // ───────────────────────
 // START SERVER
 // ───────────────────────
