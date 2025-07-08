@@ -197,7 +197,7 @@ jobs:
         run: |
           for i in {1..15}; do
             echo "Attempt $i: Checking backend (from inside container)..."
-            if docker compose exec backend curl --fail http://localhost:4000/health; then
+            if docker compose exec backend curl --fail http://localhost:10000/health; then
               echo "✅ Backend is ready"
               exit 0
             fi
@@ -207,10 +207,21 @@ jobs:
           docker compose logs backend
           exit 1
 
-      - name: ✅ Check Frontend Health (inside container)
+      - name: ✅ Check Frontend+Backend Health (via exposed port)
         working-directory: brainbytes-multi-container
         run: |
-          docker compose exec frontend curl --fail http://localhost:3000 || (echo "❌ Frontend health check failed" && exit 1)
+          for i in {1..10}; do
+            echo "Attempt $i: Checking fullstack health at http://localhost:4001..."
+            if curl --fail http://localhost:4001/health; then
+              echo "✅ Frontend+Backend is healthy"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "❌ Health check failed"
+          docker compose logs
+          exit 1
+
 
       - name: Run E2E tests
         working-directory: brainbytes-multi-container/e2e-tests
