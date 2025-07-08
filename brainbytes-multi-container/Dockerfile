@@ -4,7 +4,7 @@ WORKDIR /app/frontend
 COPY frontend/package*.json ./
 RUN npm install
 COPY frontend/ .
-RUN npm run build && npm run export
+RUN npm run build
 
 # Stage 2: Setup backend and serve static files
 FROM node:18
