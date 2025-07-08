@@ -1,17 +1,23 @@
+# Use lightweight Node image
 FROM node:18-alpine
 
 WORKDIR /app
 
+# Install dependencies
 COPY package*.json ./
 RUN npm install
 
+# Copy the rest of the app
 COPY . .
 
+# Build the static site
 RUN npm run build
 
-ENV NEXT_PUBLIC_API_URL=https://brainbytes-backend-oj3s.onrender.com
+# Install static file server
+RUN npm install -g serve
 
+# Expose the port serve will use
 EXPOSE 3000
 
-# Start the app
-CMD ["npm", "start"]
+# Run static site server
+CMD ["serve", "-s", "out", "-l", "3000"]
