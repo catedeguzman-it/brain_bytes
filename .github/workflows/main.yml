@@ -197,7 +197,7 @@ jobs:
         run: |
           for i in {1..15}; do
             echo "Attempt $i: Checking backend (from inside container)..."
-            if docker compose exec backend curl --fail http://localhost:4000/health; then
+            if docker compose exec backend curl --fail http://localhost:10000/health; then
               echo "✅ Backend is ready"
               exit 0
             fi
@@ -211,8 +211,8 @@ jobs:
         working-directory: brainbytes-multi-container
         run: |
           for i in {1..10}; do
-            echo "Attempt $i: Checking fullstack health at http://localhost:3000..."
-            if curl --fail http://localhost:3000; then
+            echo "Attempt $i: Checking fullstack health at http://localhost:4001..."
+            if curl --fail http://localhost:4001/health; then
               echo "✅ Frontend+Backend is healthy"
               exit 0
             fi
