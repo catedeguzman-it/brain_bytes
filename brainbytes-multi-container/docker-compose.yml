@@ -4,7 +4,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "3000:10000"
+      - "4000:10000"
     environment:
       - PORT=10000
       - MONGO_URI=mongodb://mongodb:27017/brainbytes
