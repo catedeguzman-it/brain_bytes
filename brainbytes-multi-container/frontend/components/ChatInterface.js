@@ -119,16 +119,6 @@ export default function ChatInterface() {
     }
   };
 
-  const handleNewChat = () => {
-    const newSessionId = crypto.randomUUID();
-    localStorage.setItem('sessionId', newSessionId);
-    router.push(`/chat/${newSessionId}`);
-  };
-
-  const goToDashboard = () => {
-    router.push('/dashboard');
-  };
-
   if (!authChecked) return null;
 
   return (
