@@ -77,3 +77,31 @@
 .messageItem:hover {
   background-color: #d0dce2;
 }
+
+.analyticsList {
+  padding-left: 20px;
+  margin-bottom: 16px;
+}
+
+.analyticsList li {
+  margin-bottom: 4px;
+  font-size: 0.95rem;
+}
+
+.chartContainer {
+  width: 100%;
+  overflow-x: auto;
+  margin-bottom: 24px;
+}
+
+.filterContainer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.filterSelect {
+  padding: 4px 8px;
+  font-size: 0.95rem;
+}

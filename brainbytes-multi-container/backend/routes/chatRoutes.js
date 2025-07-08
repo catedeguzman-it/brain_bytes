@@ -107,4 +107,28 @@ router.delete('/chat/session/:sessionId', async (req, res) => {
   }
 });
 
+// GET: Recent messages for a specific user
+router.get('/messages/recent/:userId', async (req, res) => {
+  const db = getDb();
+  const { userId } = req.params;
+
+  if (!userId) {
+    return res.status(400).json({ error: 'Missing userId' });
+  }
+
+  try {
+    const messages = await db.collection('messages')
+      .find({ userId })
+      .sort({ timestamp: -1 })
+      .limit(100)
+      .toArray();
+
+    res.json({ messages });
+  } catch (err) {
+    console.error('❌ Error fetching recent messages:', err);
+    res.status(500).json({ error: 'Failed to fetch recent messages.' });
+  }
+});
+
+
 module.exports = router;

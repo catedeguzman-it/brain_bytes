@@ -119,16 +119,6 @@ export default function ChatInterface() {
     }
   };
 
-  const handleNewChat = () => {
-    const newSessionId = crypto.randomUUID();
-    localStorage.setItem('sessionId', newSessionId);
-    router.push(`/chat/${newSessionId}`);
-  };
-
-  const goToDashboard = () => {
-    router.push('/dashboard');
-  };
-
   if (!authChecked) return null;
 
   return (
@@ -152,7 +142,17 @@ export default function ChatInterface() {
               >
                 <div className={styles.messageContent}>{msg.text}</div>
                 <div className={styles.messageTimestamp}>
-                  {new Date(msg.timestamp).toLocaleTimeString()}
+                  <div className={styles.messageTimestamp}>
+                  {new Date(msg.timestamp).toLocaleString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true,
+                  })}
+                </div>
+
                 </div>
               </div>
             ))}

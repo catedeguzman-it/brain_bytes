@@ -16,27 +16,69 @@ const chatHandler = async (req, res) => {
 
     await updateSessionActivity(sessionId);
 
+    const timestamp = new Date();
+
     // Save user message
     await db.collection('messages').insertOne({
       sessionId,
       userId,
       sender: 'user',
       text: message,
-      timestamp: new Date()
+      timestamp
     });
 
-    // Call AI
+    // Detect and store language preference if explicitly stated
+    let detectedPreference = null;
+    if (/i prefer english/i.test(message) || /english only/i.test(message)) {
+      detectedPreference = 'english';
+    } else if (/gusto ko.*tagalog/i.test(message) || /tagalog only/i.test(message)) {
+      detectedPreference = 'tagalog';
+    }
+
+    if (detectedPreference) {
+      await db.collection('chat_sessions').updateOne(
+        { sessionId },
+        { $set: { languagePreference: detectedPreference } }
+      );
+    }
+
+    // Retrieve previous messages (limit to last 10 for performance)
+    const previousMessages = await db.collection('messages')
+      .find({ sessionId })
+      .sort({ timestamp: -1 }) // newest first
+      .limit(10)
+      .toArray();
+
+    const orderedMessages = previousMessages.reverse(); // back to chronological
+
+    // Retrieve language preference from session (if set)
+    const sessionData = await db.collection('chat_sessions').findOne({ sessionId });
+    const langPref = sessionData?.languagePreference || 'english';
+
+    // Build system instruction based on preference
+    const systemInstruction = langPref === 'tagalog'
+      ? "Ikaw ay isang AI tutor. Sumagot sa Tagalog maliban na lang kung hilingin ng user ang Ingles."
+      : "You are an AI tutor. Respond in English unless the user specifically requests Tagalog.";
+
+    // Build prompt with system instruction + limited message history
+    const contextPrompt = systemInstruction + '\n' +
+      orderedMessages.map(m =>
+        `${m.sender === 'user' ? 'User' : 'AI'}: ${m.text}`
+      ).join('\n') +
+      `\nUser: ${message}\nAI:`;
+
+    // Generate AI response
     let aiCategory = 'General';
     let aiTopic = 'General';
     let aiText = "I'm here to help, but I need a bit more context.";
 
     try {
-      const ai = await generateResponse(message);
+      const ai = await generateResponse(contextPrompt);
       aiText = ai.response || aiText;
       aiCategory = ai.category || aiCategory;
       aiTopic = ai.topic || aiTopic;
     } catch (err) {
-      console.warn('⚠️ GROQ fallback failed');
+      console.warn('⚠️ GROQ fallback failed:', err);
     }
 
     // Save AI response
@@ -50,7 +92,7 @@ const chatHandler = async (req, res) => {
       timestamp: new Date()
     });
 
-    // Update chat session record
+    // Update session
     await db.collection('chat_sessions').updateOne(
       { sessionId },
       {
@@ -66,7 +108,6 @@ const chatHandler = async (req, res) => {
       { upsert: true }
     );
 
-    // Send all fields back
     res.json({
       message: aiText,
       category: aiCategory,
