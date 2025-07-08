@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import UserProfile from './UserProfile';
 import styles from '../styles/ProfileDashboard.module.css';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
 
 export default function ProfileDashboard() {
   const [user, setUser] = useState(null);
