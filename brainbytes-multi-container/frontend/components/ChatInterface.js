@@ -142,7 +142,17 @@ export default function ChatInterface() {
               >
                 <div className={styles.messageContent}>{msg.text}</div>
                 <div className={styles.messageTimestamp}>
-                  {new Date(msg.timestamp).toLocaleTimeString()}
+                  <div className={styles.messageTimestamp}>
+                  {new Date(msg.timestamp).toLocaleString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    hour12: true,
+                  })}
+                </div>
+
                 </div>
               </div>
             ))}
