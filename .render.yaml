@@ -2,7 +2,7 @@ services:
   - type: web
     name: brainbytes-backend
     env: node
-    rootDir: backend
+    rootDir: brainbytes-multi-container/backend
     buildCommand: npm install
     startCommand: node server.js
     envVars:
@@ -18,7 +18,7 @@ services:
   - type: web
     name: brainbytes-frontend
     env: static
-    rootDir: frontend
+    rootDir: brainbytes-multi-container/frontend
     buildCommand: npm install && npm run build && npm run export
     staticPublishPath: out
     envVars:
