@@ -7,6 +7,7 @@
     "build": "next build",
     "vercel-build": "next build",
     "start": "next start",
+    "export": "next export",
     "test": "jest --config=jest.config.js",
     "test:watch": "jest --config=jest.config.js --watch",
     "lint": "eslint"
@@ -19,7 +20,7 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
-  
+
   "devDependencies": {
     "@babel/preset-env": "^7.27.2",
     "@babel/preset-react": "^7.27.1",
