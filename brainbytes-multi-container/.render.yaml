@@ -2,15 +2,15 @@ services:
   - type: web
     name: brainbytes
     env: node
-    rootDir: backend
+    rootDir: .
     buildCommand: |
-      cd ../frontend
+      cd frontend
       npm install
       npm run build
       npm run export
       cd ../backend
       npm install
-    startCommand: node server.js
+    startCommand: node backend/server.js
     envVars:
       - key: PORT
         value: 10000
