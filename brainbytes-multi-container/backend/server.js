@@ -15,11 +15,13 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 4000;
 
+console.log('CLIENT_ORIGIN in backend:', process.env.CLIENT_ORIGIN);
+
 // ───────────────────────
 // MIDDLEWARE
 // ───────────────────────
 app.use(cors({
-  origin: process.env.CLIENT_ORIGIN || 'http://localhost:3000',
+  origin: process.env.CLIENT_ORIGIN || 'http://localhost:4001',
   credentials: true,
 }));
 app.use(express.json());

@@ -4,12 +4,13 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "4000:10000"
+      - "4001:10000"
     environment:
       - PORT=10000
       - MONGO_URI=mongodb://mongodb:27017/brainbytes
       - JWT_SECRET=${JWT_SECRET}
       - GROQ_API_KEY=${GROQ_API_KEY}
+      - CLIENT_ORIGIN=http://localhost:4001
     depends_on:
       - mongodb
     networks:

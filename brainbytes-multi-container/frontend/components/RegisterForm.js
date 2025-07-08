@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4001';
 
 export default function RegisterForm({ onSuccess }) {
   const [name, setName] = useState('');
