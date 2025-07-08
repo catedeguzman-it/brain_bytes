@@ -1,5 +1,5 @@
 services:
-  brainbytes:
+  backend:
     build:
       context: .
       dockerfile: Dockerfile
