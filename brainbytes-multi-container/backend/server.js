@@ -18,7 +18,10 @@ const PORT = process.env.PORT || 4000;
 // ───────────────────────
 // MIDDLEWARE
 // ───────────────────────
-app.use(cors({ origin: 'http://localhost:8080', credentials: true }));
+app.use(cors({
+  origin: process.env.CLIENT_ORIGIN || 'http://localhost:8080',
+  credentials: true,
+}));
 app.use(express.json());
 
 // ───────────────────────

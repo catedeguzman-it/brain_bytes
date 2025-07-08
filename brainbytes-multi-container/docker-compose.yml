@@ -1,27 +1,24 @@
-version: "3.8"
-
 services:
   brainbytes:
-    build: .
-    command: node backend/server.js
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
-      - "3000:10000" # Expose backend port (which serves both backend + static frontend)
+      - "3000:10000"
     environment:
       - PORT=10000
+      - MONGO_URI=mongodb://mongodb:27017/brainbytes
       - JWT_SECRET=${JWT_SECRET}
       - GROQ_API_KEY=${GROQ_API_KEY}
-      - MONGO_URI=mongodb://mongodb:27017/brainbytes
-      - CLIENT_ORIGIN=http://localhost:3000
     depends_on:
       - mongodb
     networks:
       - brainbytes-network
-    restart: unless-stopped
 
   mongodb:
     image: mongo:4.4
     ports:
-      - ${MONGO_PORT:-27017}:27017
+      - 27017:27017
     volumes:
       - mongodb-data:/data/db
     networks:
