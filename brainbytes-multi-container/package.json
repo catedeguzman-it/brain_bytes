@@ -6,7 +6,7 @@
   "scripts": {
     "start": "concurrently \"npm run start-backend\" \"npm run start-frontend\"",
     "start-backend": "node backend/server.js",
-    "start-frontend": "cd frontend && npm run serve",
+    "start-frontend": "cd frontend && npm start",
     "test": "echo \"Error: no test specified\" && exit 1",
     "test:e2e": "npx playwright test",
     "test:e2e:headed": "npx playwright test --headed",
