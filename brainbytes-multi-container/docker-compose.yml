@@ -1,32 +1,22 @@
-services:
-  frontend:
-    build: ./frontend
-    command: npm run start
-    ports:
-      - "8080:3000"
-    environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:4000
-    depends_on:
-      - backend
-    networks:
-      - brainbytes-network
+version: "3.8"
 
-  backend:
-    build: ./backend
-    command: node server.js
+services:
+  brainbytes:
+    build: .
+    command: node backend/server.js
     ports:
-      - "4000:4000"
+      - "3000:10000" # Expose backend port (which serves both backend + static frontend)
     environment:
+      - PORT=10000
       - JWT_SECRET=${JWT_SECRET}
       - GROQ_API_KEY=${GROQ_API_KEY}
       - MONGO_URI=mongodb://mongodb:27017/brainbytes
-      - PORT=4000
+      - CLIENT_ORIGIN=http://localhost:3000
     depends_on:
       - mongodb
     networks:
       - brainbytes-network
     restart: unless-stopped
-   
 
   mongodb:
     image: mongo:4.4
