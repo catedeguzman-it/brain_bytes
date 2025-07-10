@@ -32,7 +32,7 @@ BrainBytes is a containerized, cloud-native AI platform built using:
 ---
 
 ## 🌐 Environment Architecture
-
+![Deployment Architecture Diagram](<Deployment Architecture Diagram.png>)
 ### ⚙️ Components
 
 | Component     | Description                            | Hosting / Platform     |
