@@ -24,18 +24,21 @@
 
 ### Pipeline Architecture
 
-┌──────────────┐    ┌──────────────┐    ┌────────────────────┐
-│ Code Commit  ├──▶│ GitHub Actions├──▶│ Render (Deploy API)│
-└──────────────┘    └──────────────┘    └────────────────────┘
-        ▲                    ▼
-   Pull Requests         Linting, Tests, Builds
-                         └─> E2E + Docker Compose Integration
+```mermaid
+flowchart LR
+  A[Code Commit / Pull Request] --> B[GitHub Actions]
+  B --> C[Render (Deploy API)]
+  B --> D[Linting, Tests, Builds]
+  D --> E[E2E + Docker Compose Integration]
+```
+
+*This diagram illustrates the CI/CD pipeline: code commits or pull requests trigger GitHub Actions, which run linting, tests, builds, and E2E integration. Successful builds are deployed to Render via its Deploy API.*
 
 
 ### GitHub Actions Workflow Files
-- `.github/workflows/test.yml`: Lints and tests backend & frontend  
-- `.github/workflows/integration-test.yml`: Runs containerized integration tests with MongoDB  
-- `.github/workflows/render.yml`: Deploys both services to Render using `render-deploy@v1.4.5`  
+- `.github/workflows/main.yml`: Lints and tests backend & frontend  
+- `.github/workflows/main.yml`: Runs containerized integration tests with MongoDB  
+- `.github/workflows/deploy.yml`: Deploys both services to Render using `render-deploy@v1.4.5`  
 
 ### Integration with Containerized Application
 - Frontend and backend are Dockerized
