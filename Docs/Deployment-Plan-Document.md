@@ -161,4 +161,4 @@ Incident Alerts: Optional webhook/Slack integration
 
 ✅ Deployment Checklist
 
-![Checklist](<Deployment Checklist.png>)
+![Gantt](<Deployment Checklist.png>)
