@@ -225,7 +225,10 @@ jobs:
 
       - name: Run E2E tests
         working-directory: brainbytes-multi-container/e2e-tests
-        run: npm install && npm run test:e2e
+        run: |
+          npm install
+          npx playwright install --with-deps
+          npm run test:e2e
 
       - name: 🧹 Tear Down Docker
         working-directory: brainbytes-multi-container
