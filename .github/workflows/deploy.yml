@@ -7,23 +7,9 @@ on:
   workflow_dispatch:
 
 jobs:
-  debug-service-id:
-    name: 🧪 Debug service ID presence
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check FRONTEND_RENDER_SERVICE_ID
-        run: |
-          if [ -z "${{ secrets.FRONTEND_RENDER_SERVICE_ID }}" ]; then
-            echo "❌ FRONTEND_RENDER_SERVICE_ID is empty or missing"
-            exit 1
-          else
-            echo "✅ FRONTEND_RENDER_SERVICE_ID is defined"
-          fi
-
   deploy-frontend:
     name: 🚀 Deploy Frontend
     runs-on: ubuntu-latest
-    needs: debug-service-id
     permissions:
       deployments: write
 
