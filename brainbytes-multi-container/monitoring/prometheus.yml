@@ -1,137 +1,63 @@
-# BrainBytes CI/CD System Architecture
+project_name: BrainBytes
+description: >
+  BrainBytes is a containerized AI tutoring chat platform that integrates a modern frontend,
+  an AI-powered backend (Groq), and a MongoDB database. This configuration describes the CI/CD
+  pipeline, cloud deployment, and component interactions using GitHub Actions and Render.
 
-## Overview
-[The BrainBytes project is a containerized AI tutoring chat platform that integrates a modern frontend, an AI-powered backend (Groq), and a MongoDB database. This document outlines the architecture of the CI/CD pipeline, cloud deployment, and component interactions using GitHub Actions and Render.]
+architecture_diagram: ![BrainBytes multi-container architecture diagram showing frontend, backend, and MongoDB database connected via secure APIs. The frontend communicates with the backend, which interacts with MongoDB Atlas and the Groq API. The diagram includes labeled arrows for REST API calls and secure connections. The environment is a cloud deployment with services hosted on Render.com. Text in the image: BrainBytes Frontend, BrainBytes Backend, MongoDB Atlas, Groq API, REST API, Secure Connection. The tone is technical and informative.](
+  brainbytes-multi-container/monitoring/Architecture Diagram.png
+)  # path to a Mermaid or image file
 
-## Architecture Diagram
 
-```mermaid
----
-config:
-  theme: base
-  layout: fixed
----
-flowchart TD
- subgraph subGraph0["Developer Workflow"]
-        A1["💻 Code Commit GitHub"]
-        A2["🔀 Branch: main / dev / feature"]
-  end
- subgraph subGraph1["GitHub Actions CI/CD"]
-        B1["✅ Lint & Test lint-test.yml"]
-        B2["🐳 Docker Build frontend/backend"]
-        B3["🚀 Deploy to Render render-deploy@v1.4.5"]
-  end
- subgraph subGraph2["Render Deployment"]
-        C1["🌐 Frontend Service\nbrainbytes-frontend.onrender.com"]
-        C2["🧠 Backend Service\nbrainbytes-backend.onrender.com"]
-  end
- subgraph subGraph3["External Services"]
-        D1["🗃️ MongoDB Atlas"]
-        D2["🤖 Groq AI API"]
-  end
-    A1 --> A2
-    A2 --> B1
-    B1 --> B2
-    B2 --> B3
-    B3 --> C1 & C2
-    C2 --> D1 & D2
-    style A1 fill:#f9f,stroke:#333,stroke-width:1px
-    style A2 fill:#fdfd96,stroke:#333
-    style B1 fill:#DFF2BF,stroke:#333
-    style B2 fill:#BDE5F8,stroke:#333
-    style B3 fill:#FFC0CB,stroke:#333
-    style C1 fill:#c5f8d5,stroke:#333
-    style C2 fill:#c5f8d5,stroke:#333
-    style D1 fill:#FFDEAD,stroke:#333
-    style D2 fill:#FFDEAD,stroke:#333
-```
+source_control:
+  repository: https://github.com/catedeguzman-it/brain_bytes.git
+  branch_structure:
+    - main: Stable, production-ready code
+    - dev: Feature staging and integration
+    - feature/*: Individual developer branches
+  protection_rules:
+    - Required PR reviews before merge
+    - Status checks for build and tests
+    - Branch deletion rules after merge
 
-## Components
-### 1. Source Control
-- Repository: https://github.com/catedeguzman-it/brain_bytes.git
-- Branch Structure:
-  - main: Stable, production-ready code
-  - dev: Feature staging and integration
-  - feature/*: Individual developer branches
-- Protection Rules:
-  - Required PR reviews before merge
-  - Status checks for build and tests
-  - Branch deletion rules after merge
+ci_cd_pipeline:
+  platform: GitHub Actions
+  workflows:
+    - .github/workflows/main.yml
+    - .github/workflows/deploy.yml
+  stages:
+    - name: Linting & Tests
+      description: Runs Prettier, ESLint, and integration tests on push
+    - name: Docker Build
+      description: Builds frontend and backend containers
+    - name: Deployment
+      description: >
+        Uses JorgeLNJunior/render-deploy@v1.4.5 with RENDER_SERVICE_ID and RENDER_API_KEY
+        to deploy services to Render
+    - name: Post-Deployment Check
+      description: Verifies health check endpoints
 
-### 2. CI/CD Pipeline
-- Platform: GitHub Actions
-- Workflow Files:
-  - .github/workflows/main.yml
-  - .github/workflows/deploy.yml
+cloud_infrastructure:
+  provider: Render.com
+  resources:
+    - frontend_service: brainbytes-frontend-<id>.onrender.com
+    - backend_service: brainbytes-backend-<id>.onrender.com
+    - database: MongoDB Atlas
+  networking:
+    - All services are exposed via HTTPS
+    - Internal API traffic secured via env vars and auth headers
+    - Configurations handled in Render Dashboard
 
-- Pipeline Stages:
-```mermaid
-flowchart TD
-  A[🧪 Linting & Tests\n- Runs Prettier\n- Runs ESLint\n- Runs integration tests] --> B[🐳 Docker Build\n- Build frontend container\n- Build backend container]
-  B --> C[🚀 Deployment\n- Uses render-deploy@v1.4.5\n- RENDER_SERVICE_ID + RENDER_API_KEY]
-  C --> D[🔍 Post-Deployment Check\n- Verifies health check endpoints]
+component_interactions_description: >
+  The frontend communicates with the backend via REST API. The backend interacts with
+  MongoDB Atlas for data persistence and with the Groq API for AI responses. GitHub Actions
+  automates deployments using secured secrets.
 
-  style A fill:#DFF2BF,stroke:#333
-  style B fill:#BDE5F8,stroke:#333
-  style C fill:#FFDAB9,stroke:#333
-  style D fill:#E0BBE4,stroke:#333
-```
+component_interactions_diagram: diagrams/component-interactions.mmd  # path to a Mermaid or image file
 
-### 3. Cloud Infrastructure
-Cloud Provider: Render.com (PaaS)
-
-Resources:
-- Frontend Web Service: brainbytes-frontend-<id>.onrender.com
-- Backend Web Service: brainbytes-backend-<id>.onrender.com
-- MongoDB Atlas: Cloud-hosted NoSQL database
-
-Networking:
-- All services are exposed via HTTPS
-- Internal API traffic secured via environment variables and auth headers
-- Environment-specific configurations are handled via Render's Dashboard
-
-## Component Interactions
-```mermaid
-flowchart TD
-  subgraph Frontend [🌐 Frontend]
-    FE[User Interface\n(brainbytes-frontend)]
-  end
-
-  subgraph Backend [🧠 Backend]
-    BE[API Server\n(brainbytes-backend)]
-    DB[(MongoDB Atlas)]
-    AI[(Groq API)]
-  end
-
-  subgraph DevOps [⚙️ GitHub Actions]
-    CI[Commit to main branch]
-    GH[GitHub Actions Workflow]
-    ENV[Secrets:\nMONGO_URI,\nGROQ_API_KEY,\nRENDER_API_KEY]
-    DEPLOY[Deploy to Render\n(render-deploy@v1.4.5)]
-  end
-
-  FE -- REST API Calls --> BE
-  BE --> DB
-  BE --> AI
-
-  CI --> GH --> DEPLOY
-  GH --> ENV
-  DEPLOY --> FE
-  DEPLOY --> BE
-
-  style FE fill:#BDE5F8,stroke:#333
-  style BE fill:#D0F0C0,stroke:#333
-  style DB fill:#FDFD96,stroke:#333
-  style AI fill:#FFDEAD,stroke:#333
-  style CI fill:#FFC0CB,stroke:#333
-  style GH fill:#FFB347,stroke:#333
-  style ENV fill:#E6E6FA,stroke:#333
-  style DEPLOY fill:#C1C8E4,stroke:#333
-```
-
-## Security Considerations
-- All secrets managed via GitHub Encrypted Secrets
-- Render services use auto HTTPS and have access restrictions
-- MongoDB Atlas IP whitelist ensures only Render services can connect
-- CI/CD includes vulnerability scans and code linting
-- API routes protected with basic auth and request validation
+security_considerations:
+  - Secrets are managed via GitHub Encrypted Secrets
+  - Render services use HTTPS and access restrictions
+  - MongoDB Atlas uses IP whitelisting to restrict access
+  - CI/CD pipeline includes linting, testing, and vulnerability scanning
+  - API routes include basic auth and request validation
