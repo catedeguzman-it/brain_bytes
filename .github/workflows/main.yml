@@ -189,7 +189,7 @@ jobs:
           docker compose exec backend cat server.js || true
 
       - name: 🧭 Install Playwright Browsers
-        working-directory: brainbytes-multi-container
+        working-directory: brainbytes-multi-container/e2e-tests
         run: npx playwright install --with-deps
 
       - name: ✅ Check Backend Health (inside container)
