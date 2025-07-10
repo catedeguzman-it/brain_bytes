@@ -223,7 +223,7 @@ jobs:
           exit 1
 
 
-      - name: Run E2E tests
+      - name: Run E2E tests (with timeout)
         working-directory: brainbytes-multi-container/e2e-tests
         run: |
           npm install
