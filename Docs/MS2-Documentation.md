@@ -57,12 +57,17 @@ flowchart LR
 
 ### Cloud Platform Architecture (Render)
 
-Frontend (Web Service)
-  └── Render URL: brainbytes-frontend-<id>.onrender.com
-
-Backend (Web Service)
-  └── Connected to MongoDB via MONGO_URI
-  └── Integrated with Groq for AI responses
+```mermaid
+---
+config:
+  theme: default
+  layout: fixed
+  look: neo
+---
+flowchart TD
+    FE["Frontend Web Service"] --> FE_URL["Render URL: brainbytes-frontend-zk1e.onrender.com"]
+    BE["Backend Web Service"] --> BE_DB["Connected to MongoDB via MONGO_URI"] & BE_GROQ["Integrated with Groq for AI responses"]
+```
 
 
 ### Resource Configuration
