@@ -45,16 +45,13 @@ BrainBytes is a containerized, cloud-native AI platform built using:
 
 ### 🗺️ Network Topology
 
-User ⇄ Frontend (Render)
-⇅
-Backend API (Render)
-⇅
-MongoDB Atlas
-⇅
-Groq API
-
-
----
+```mermaid
+flowchart TD
+  User[User] <--> FE[Frontend Render]
+  FE <--> BE[Backend API Render]
+  BE <--> DB[MongoDB Atlas]
+  DB <--> Groq[Groq API]
+```
 
 ## 📦 Resource Specifications
 
