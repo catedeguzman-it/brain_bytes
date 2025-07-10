@@ -27,7 +27,7 @@
 ```mermaid
 flowchart LR
   A[Code Commit / Pull Request] --> B[GitHub Actions]
-  B --> C[Render (Deploy API)]
+  B --> C[Render Deploy API]
   B --> D[Linting, Tests, Builds]
   D --> E[E2E + Docker Compose Integration]
 ```
