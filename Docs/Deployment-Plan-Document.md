@@ -161,13 +161,4 @@ Incident Alerts: Optional webhook/Slack integration
 
 ✅ Deployment Checklist
 
-```mermaid
-flowchart TD
-  A1([✅ Code pushed to main])
-  A2([⬜ Render services configured])
-  A3([⬜ MongoDB Atlas connected])
-  A4([⬜ Groq API key secured in env])
-  A5([⬜ Frontend env variable set])
-  A6([⬜ Docker Compose verified locally])
-  A7([⬜ End-to-end tests passed])
-```
+![Checklist](<Deployment Checklist.png>)
