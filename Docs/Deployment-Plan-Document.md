@@ -160,16 +160,16 @@ Health Checks: Built-in via Render auto-restarts
 Incident Alerts: Optional webhook/Slack integration
 
 ✅ Deployment Checklist
- Code pushed to main
 
- Render services configured (frontend/backend)
-
- MongoDB Atlas connected
-
- Groq API key secured in env
-
- Frontend env variable for backend URL
-
- Docker Compose verified locally
-
- End-to-end tests passed
+%%{init: {'theme': 'default'}}%%
+gantt
+  title ✅ Deployment Readiness Checklist
+  dateFormat  YYYY-MM-DD
+  section Tasks
+  ☑️ Code pushed to main            :done, task1, 2025-07-01, 1d
+  ⬜ Render services configured     :task2, 2025-07-02, 1d
+  ⬜ MongoDB Atlas connected        :task3, 2025-07-02, 1d
+  ⬜ Groq API key secured in env    :task4, 2025-07-03, 1d
+  ⬜ Frontend env var for backend   :task5, 2025-07-03, 1d
+  ⬜ Docker Compose verified locally:task6, 2025-07-04, 1d
+  ⬜ End-to-end tests passed        :task7, 2025-07-05, 1d
