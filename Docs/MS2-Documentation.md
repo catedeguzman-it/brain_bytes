@@ -27,9 +27,9 @@
 ```mermaid
 flowchart LR
   A[Code Commit / Pull Request] --> B[GitHub Actions]
-  B --> C[Render Deploy API]
-  B --> D[Linting, Tests, Builds]
-  D --> E[E2E + Docker Compose Integration]
+  B --> C[Linting, Tests, Builds]
+  B --> D[E2E + Docker Compose Integration]
+  D --> E[Render Deploy API]
 ```
 
 *This diagram illustrates the CI/CD pipeline: code commits or pull requests trigger GitHub Actions, which run linting, tests, builds, and E2E integration. Successful builds are deployed to Render via its Deploy API.*
