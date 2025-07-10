@@ -1,4 +1,4 @@
-# BrainBytes Testing Strategy
+# Week-5 BrainBytes Testing Strategy 
 
 ## Overview
 
@@ -21,7 +21,7 @@ This document outlines the testing approach for the BrainBytes AI Tutoring Platf
 
 - **Jest**: Main testing framework for both frontend and backend
 - **React Testing Library**: For testing React components
-- **Supertest**: For testing API endpoints
+- **Supertest/Postman**: For testing API endpoints
 
 ## Code Quality
 
