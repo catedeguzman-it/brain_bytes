@@ -1,6 +1,8 @@
-# BrainBytes AI Tutoring Platform
+# 🧠BrainBytes AI Tutoring Platform
 
 ![CI/CD Status](https://github.com/catedeguzman-it/brain_bytes/actions/workflows/main.yml/badge.svg)
+[![Deploy](https://img.shields.io/github/actions/workflow/status/catedeguzman-it/brain_bytes/deploy.yml?label=deploy&style=flat-square)](https://github.com/catedeguzman-it/brain_bytes/actions/workflows/deploy.yml)
+
 ![Deploy Status](https://github.com/catedeguzman-it/brain_bytes/actions/workflows/deploy.yml/badge.svg)
 
 ## Project Overview
