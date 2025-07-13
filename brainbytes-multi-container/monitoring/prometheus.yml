@@ -1,5 +1,14 @@
 global:
   scrape_interval: 15s  # Collect metrics every 15 seconds
+  evaluation_interval: 15s  # Evaluate rules every 15 seconds
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['alertmanager:9093']
+
+rule_files:
+  - 'alert_rules.yml'
 
 scrape_configs:
   - job_name: 'node-exporter'
@@ -9,3 +18,7 @@ scrape_configs:
   - job_name: 'backend'
     static_configs:
       - targets: ['backend:10000']  # This must match backend service name and port
+
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']

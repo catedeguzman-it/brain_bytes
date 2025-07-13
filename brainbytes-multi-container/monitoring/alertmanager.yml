@@ -1,0 +1,14 @@
+global:
+  smtp_smarthost: 'smtp.gmail.com:587'  # For Gmail
+  smtp_from: 'lr.cdguzman@mmdc.mcl.edu.ph'
+  smtp_auth_username: 'lr.cdguzman@mmdc.mcl.edu.ph'
+  smtp_auth_password: 'prkr rwra cklu essl'  # Not your Gmail password
+
+route:
+  receiver: 'email-notifications'
+
+receivers:
+  - name: 'email-notifications'
+    email_configs:
+      - to: 'lr.cdguzman@mmdc.mcl.edu.ph,lr.jecerio@mmdc.mcl.edu.ph,lr.kdjusay@mmdc.mcl.edu.ph'
+        send_resolved: true

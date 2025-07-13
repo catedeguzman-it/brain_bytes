@@ -1,0 +1,20 @@
+groups:
+  - name: brainbytes-alerts
+    rules:
+      - alert: BackendDown
+        expr: up{job="backend"} == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Backend service is down"
+          description: "No metrics from the backend service for 30 seconds."
+
+      - alert: HighCPUUsage
+        expr: rate(node_cpu_seconds_total{mode="user"}[1m]) > 0.9
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU Usage Detected"
+          description: "CPU usage has been above 90% for 1 minute."

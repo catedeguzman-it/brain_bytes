@@ -8,6 +8,7 @@ const authRoutes = require('./routes/authRoutes');
 const chatRoutes = require('./routes/chatRoutes');
 const userRoutes = require('./routes/userRoutes');
 const messageRoutes = require('./routes/messageRoutes');
+const metricRoutes = require('./routes/metricRoutes'); // ✅ Import your router
 const { initializeAI } = require('./services/aiService');
 
 // 🧪 Prometheus client
@@ -54,11 +55,12 @@ app.use('/api', authRoutes);
 app.use('/api', chatRoutes);
 app.use('/api', userRoutes);
 app.use('/api', messageRoutes);
+app.use('/api', metricRoutes); // ✅ Use /api prefix for consistency
 
 // ──────── HEALTH CHECK ────────
 app.get('/health', (req, res) => res.send('OK'));
 
-// 🧪 Prometheus metrics endpoint
+// 🧪 Prometheus metrics endpoint (from prom-client)
 app.get('/metrics', async (req, res) => {
   res.setHeader('Content-Type', register.contentType);
   res.end(await register.metrics());
