@@ -1,63 +1,11 @@
-project_name: BrainBytes
-description: >
-  BrainBytes is a containerized AI tutoring chat platform that integrates a modern frontend,
-  an AI-powered backend (Groq), and a MongoDB database. This configuration describes the CI/CD
-  pipeline, cloud deployment, and component interactions using GitHub Actions and Render.
+global:
+  scrape_interval: 15s  # Collect metrics every 15 seconds
 
-architecture_diagram: ![BrainBytes multi-container architecture diagram showing frontend, backend, and MongoDB database connected via secure APIs. The frontend communicates with the backend, which interacts with MongoDB Atlas and the Groq API. The diagram includes labeled arrows for REST API calls and secure connections. The environment is a cloud deployment with services hosted on Render.com. Text in the image: BrainBytes Frontend, BrainBytes Backend, MongoDB Atlas, Groq API, REST API, Secure Connection. The tone is technical and informative.](
-  brainbytes-multi-container/monitoring/Architecture Diagram.png
-)  # path to a Mermaid or image file
+scrape_configs:
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['node-exporter:9100']
 
-
-source_control:
-  repository: https://github.com/catedeguzman-it/brain_bytes.git
-  branch_structure:
-    - main: Stable, production-ready code
-    - dev: Feature staging and integration
-    - feature/*: Individual developer branches
-  protection_rules:
-    - Required PR reviews before merge
-    - Status checks for build and tests
-    - Branch deletion rules after merge
-
-ci_cd_pipeline:
-  platform: GitHub Actions
-  workflows:
-    - .github/workflows/main.yml
-    - .github/workflows/deploy.yml
-  stages:
-    - name: Linting & Tests
-      description: Runs Prettier, ESLint, and integration tests on push
-    - name: Docker Build
-      description: Builds frontend and backend containers
-    - name: Deployment
-      description: >
-        Uses JorgeLNJunior/render-deploy@v1.4.5 with RENDER_SERVICE_ID and RENDER_API_KEY
-        to deploy services to Render
-    - name: Post-Deployment Check
-      description: Verifies health check endpoints
-
-cloud_infrastructure:
-  provider: Render.com
-  resources:
-    - frontend_service: brainbytes-frontend-<id>.onrender.com
-    - backend_service: brainbytes-backend-<id>.onrender.com
-    - database: MongoDB Atlas
-  networking:
-    - All services are exposed via HTTPS
-    - Internal API traffic secured via env vars and auth headers
-    - Configurations handled in Render Dashboard
-
-component_interactions_description: >
-  The frontend communicates with the backend via REST API. The backend interacts with
-  MongoDB Atlas for data persistence and with the Groq API for AI responses. GitHub Actions
-  automates deployments using secured secrets.
-
-component_interactions_diagram: diagrams/component-interactions.mmd  # path to a Mermaid or image file
-
-security_considerations:
-  - Secrets are managed via GitHub Encrypted Secrets
-  - Render services use HTTPS and access restrictions
-  - MongoDB Atlas uses IP whitelisting to restrict access
-  - CI/CD pipeline includes linting, testing, and vulnerability scanning
-  - API routes include basic auth and request validation
+  - job_name: 'backend'
+    static_configs:
+      - targets: ['backend:10000']  # This must match backend service name and port
