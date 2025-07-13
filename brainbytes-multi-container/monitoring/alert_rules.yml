@@ -18,3 +18,13 @@ groups:
         annotations:
           summary: "High CPU Usage Detected"
           description: "CPU usage has been above 90% for 1 minute."
+
+      - alert: HighMemoryUsage
+        expr: ((node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes) > 0.9
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: High Memory Usage
+          description: Memory usage has been over 90% for more than 2 minutes.
+      
