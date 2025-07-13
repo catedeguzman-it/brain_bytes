@@ -10,6 +10,16 @@ const userRoutes = require('./routes/userRoutes');
 const messageRoutes = require('./routes/messageRoutes');
 const { initializeAI } = require('./services/aiService');
 
+// 🧪 Prometheus client
+const promClient = require('prom-client');
+const register = new promClient.Registry();
+promClient.collectDefaultMetrics({ register });
+
+const httpRequestCounter = new promClient.Counter({
+  name: 'http_requests_total',
+  help: 'Total number of HTTP requests',
+  labelNames: ['method', 'route', 'status'],
+});
 
 dotenv.config();
 const app = express();
@@ -21,10 +31,21 @@ console.log('CLIENT_ORIGIN in backend:', process.env.CLIENT_ORIGIN);
 // MIDDLEWARE
 // ───────────────────────
 app.use(cors({
-  origin: process.env.CLIENT_ORIGIN || 'http://localhost:4001',
+  origin: [
+    'http://localhost:3000',
+    'https://brainbytes-frontend-zk1e.onrender.com'
+  ],
   credentials: true,
 }));
+
 app.use(express.json());
+
+app.use((req, res, next) => {
+  res.on('finish', () => {
+    httpRequestCounter.labels(req.method, req.path, res.statusCode).inc();
+  });
+  next();
+});
 
 // ───────────────────────
 // ROUTES
@@ -37,14 +58,10 @@ app.use('/api', messageRoutes);
 // ──────── HEALTH CHECK ────────
 app.get('/health', (req, res) => res.send('OK'));
 
-// ───────────────────────
-// SERVE FRONTEND STATIC BUILD
-// ───────────────────────
-app.use(express.static(path.join(__dirname, '../frontend/out')));
-
-// Fallback: send index.html for unmatched routes (SPA behavior)
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/out/index.html'));
+// 🧪 Prometheus metrics endpoint
+app.get('/metrics', async (req, res) => {
+  res.setHeader('Content-Type', register.contentType);
+  res.end(await register.metrics());
 });
 
 // ───────────────────────

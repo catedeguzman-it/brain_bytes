@@ -1,17 +1,23 @@
+# Use lightweight Node image
 FROM node:18-alpine
 
 WORKDIR /app
 
-# Install curl
-RUN apk add --no-cache curl
-
+# Install dependencies
 COPY package*.json ./
 RUN npm install
+
+# Copy the rest of the app
 COPY . .
 
-# ❗ Build Next.js app
+# Build the static site
 RUN npm run build
 
-ENV HOST=http://localhost:4000
+# Install static file server
+RUN npm install -g serve
+
+# Expose the port serve will use
 EXPOSE 3000
-CMD ["npm", "run", "start"]
+
+# Run static site server
+CMD ["serve", "-s", "out", "-l", "3000"]

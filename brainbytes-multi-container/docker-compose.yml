@@ -1,4 +1,20 @@
+version: '3.8'
+
 services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://backend:10000
+
+    networks:
+      - brainbytes-network
+    depends_on:
+      - backend
+
   backend:
     build:
       context: .
@@ -10,7 +26,7 @@ services:
       - MONGO_URI=mongodb://mongodb:27017/brainbytes
       - JWT_SECRET=${JWT_SECRET}
       - GROQ_API_KEY=${GROQ_API_KEY}
-      - CLIENT_ORIGIN=http://localhost:4001
+      - CLIENT_ORIGIN=http://localhost:3000
     depends_on:
       - mongodb
     networks:
@@ -19,9 +35,25 @@ services:
   mongodb:
     image: mongo:4.4
     ports:
-      - 27017:27017
+      - "27017:27017"
     volumes:
       - mongodb-data:/data/db
+    networks:
+      - brainbytes-network
+
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - brainbytes-network
+
+  node-exporter:
+    image: prom/node-exporter
+    ports:
+      - "9100:9100"
     networks:
       - brainbytes-network
 

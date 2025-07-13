@@ -189,7 +189,7 @@ jobs:
           docker compose exec backend cat server.js || true
 
       - name: 🧭 Install Playwright Browsers
-        working-directory: brainbytes-multi-container
+        working-directory: brainbytes-multi-container/e2e-tests
         run: npx playwright install --with-deps
 
       - name: ✅ Check Backend Health (inside container)
@@ -223,9 +223,12 @@ jobs:
           exit 1
 
 
-      - name: Run E2E tests
+      - name: Run E2E tests on Deployed Site
         working-directory: brainbytes-multi-container/e2e-tests
-        run: npm install && npm run test:e2e
+        run: |
+          npm install
+          npx playwright install --with-deps
+          npm run test:e2e
 
       - name: 🧹 Tear Down Docker
         working-directory: brainbytes-multi-container

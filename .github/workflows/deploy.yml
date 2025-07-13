@@ -1,0 +1,51 @@
+name: 🚀 Deploy to Render
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy-frontend:
+    name: 🚀 Deploy Frontend
+    runs-on: ubuntu-latest
+    permissions:
+      deployments: write
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v3
+
+      - name: 🔧 Deploy Frontend to Render
+        uses: JorgeLNJunior/render-deploy@v1.4.5
+        with:
+          service_id: ${{ secrets.FRONTEND_RENDER_SERVICE_ID }}
+          api_key: ${{ secrets.RENDER_API_KEY }}
+          clear_cache: true
+          wait_deploy: true
+          github_deployment: true
+          deployment_environment: 'production'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+  deploy-backend:
+    name: 🚀 Deploy Backend
+    runs-on: ubuntu-latest
+    needs: deploy-frontend
+    permissions:
+      deployments: write
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v3
+
+      - name: 🔧 Deploy Backend to Render
+        uses: JorgeLNJunior/render-deploy@v1.4.5
+        with:
+          service_id: ${{ secrets.BACKEND_RENDER_SERVICE_ID }}
+          api_key: ${{ secrets.RENDER_API_KEY }}
+          clear_cache: true
+          wait_deploy: true
+          github_deployment: true
+          deployment_environment: 'production'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
