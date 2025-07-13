@@ -9,7 +9,6 @@ services:
       - "3000:3000"
     environment:
       - NEXT_PUBLIC_API_URL=http://backend:10000
-
     networks:
       - monitoring
     depends_on:
@@ -49,6 +48,22 @@ services:
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
       - ./monitoring/alert_rules.yml:/etc/prometheus/alert_rules.yml
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    networks:
+      - monitoring
+    depends_on:
+      - alertmanager
+
+  alertmanager:
+    image: prom/alertmanager
+    container_name: alertmanager
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./monitoring/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+    command:
+      - "--config.file=/etc/alertmanager/alertmanager.yml"
     networks:
       - monitoring
 
@@ -60,25 +75,17 @@ services:
     networks:
       - monitoring
 
-  alertmanager:
-    image: prom/alertmanager
-    container_name: alertmanager
-    ports:
-      - "9093:9093"
-    volumes:
-      - ./monitoring/alertmanager.yml:/etc/alertmanager/alertmanager.yml
-    command:
-      - '--config.file=/etc/alertmanager/alertmanager.yml'
-
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
     ports:
-      - "3001:3000"  # Grafana UI will be available at http://localhost:3001
+      - "3001:3000"
     volumes:
       - grafana-storage:/var/lib/grafana
     depends_on:
       - prometheus
+    networks:
+      - monitoring
 
 volumes:
   grafana-storage:
