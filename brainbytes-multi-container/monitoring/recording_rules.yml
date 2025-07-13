@@ -1,0 +1,14 @@
+groups:
+  - name: brainbytes_recording_rules
+    interval: 30s
+    rules:
+      - record: job:ai_response_duration_avg:30s
+        expr: avg(rate(brainbytes_ai_response_duration_seconds_sum[30s])) 
+              / avg(rate(brainbytes_ai_response_duration_seconds_count[30s]))
+        labels:
+          job: brainbytes_app
+
+      - record: job:active_sessions_max:5m
+        expr: max_over_time(brainbytes_active_sessions[5m])
+        labels:
+          job: brainbytes_app

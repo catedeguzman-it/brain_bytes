@@ -27,4 +27,21 @@ groups:
         annotations:
           summary: High Memory Usage
           description: Memory usage has been over 90% for more than 2 minutes.
-      
+    
+      - alert: HighAIResponseLatency
+        expr: histogram_quantile(0.95, sum(rate(brainbytes_ai_response_duration_seconds_bucket[5m])) by (le)) > 2
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "AI response latency is too high"
+          description: "95th percentile response time exceeded 2s for 2 minutes"
+
+      - alert: LowActiveSessions
+        expr: brainbytes_active_sessions < 1
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "No active sessions"
+          description: "Zero sessions for over 5 minutes - potential outage"
