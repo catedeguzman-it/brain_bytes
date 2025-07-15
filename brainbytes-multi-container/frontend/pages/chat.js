@@ -5,10 +5,12 @@ import ChatInterface from '../components/ChatInterface';
 
 export default function ChatPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const auth = localStorage.getItem('isAuthenticated') === 'true';
     setIsAuthenticated(auth);
+    setIsLoading(false);
   }, []);
 
   const handleLogout = () => {
@@ -29,6 +31,7 @@ export default function ChatPage() {
     window.location.href = '/dashboard';
   };
 
+  if (isLoading) return <div>Loading...</div>;
   if (!isAuthenticated) return null;
 
   return (
