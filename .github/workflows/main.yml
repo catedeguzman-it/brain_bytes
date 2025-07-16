@@ -211,8 +211,8 @@ jobs:
         working-directory: brainbytes-multi-container
         run: |
           for i in {1..10}; do
-            echo "Attempt $i: Checking fullstack health at http://localhost:4001..."
-            if curl --fail http://localhost:4001/health; then
+            echo "Attempt $i: Checking fullstack health at http://localhost:10000..."
+            if curl --fail http://localhost:10000/health; then
               echo "✅ Frontend+Backend is healthy"
               exit 0
             fi
