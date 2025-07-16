@@ -10,10 +10,13 @@ const chatHandler = async (req, res) => {
     const { message, userId } = req.body;
     const sessionId = req.headers.sessionid;
 
-    if (!sessionId || typeof message !== 'string' || !message.trim()) {
+    if (!sessionId || !message || typeof message !== 'string' || !message.trim()) {
       return res.status(400).json({ error: 'Invalid sessionId or message' });
     }
 
+    if (!userId) {
+      return res.status(400).json({ error: 'Missing userId' });
+    }
     await updateSessionActivity(sessionId);
 
     const timestamp = new Date();
