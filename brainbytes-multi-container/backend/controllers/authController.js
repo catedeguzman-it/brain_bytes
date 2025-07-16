@@ -11,6 +11,7 @@ const registerUser = async (req, res) => {
 
   try {
     const { name, email, password } = req.body;
+    console.log('📥 Register input:', { name, email });
 
     const existingUser = await db.collection('users').findOne({ email });
     if (existingUser) {
@@ -28,23 +29,37 @@ const registerUser = async (req, res) => {
     });
 
     const userId = result.insertedId;
+    console.log('🆔 Inserted userId:', userId);
+
+    if (!userId) {
+      throw new Error('User registration failed: no insertedId returned');
+    }
+
+    // Log before creating session
+    console.log('📦 Creating session...');
     const sessionId = await createSession(userId);
+    console.log('✅ Session created:', sessionId);
+
     const token = jwt.sign({ userId, email }, process.env.JWT_SECRET, { expiresIn: '2h' });
+    console.log('🔐 Token created');
 
     res.status(201).json({
-    token,
-    sessionId,
-    user: {
-      _id: userId,
-      name,
-      email,
-    },
-  });
+      token,
+      sessionId,
+      user: {
+        _id: userId,
+        name,
+        email,
+      },
+    });
+
+    console.log('✅ Sent registration response');
   } catch (err) {
     console.error('❌ Registration error:', err);
     res.status(500).json({ error: 'Failed to register user' });
   }
 };
+
 
 // POST /api/login
 const loginUser = async (req, res) => {

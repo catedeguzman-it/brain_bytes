@@ -21,7 +21,11 @@ export default function RegisterForm({ onSuccess }) {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Registration failed');
+      console.log('📦 Registration response:', data); 
+
+      if (!res.ok || !data.user || !data.user._id) {
+        throw new Error(data.error || 'Registration failed or malformed response');
+      }
 
       localStorage.setItem('userId', data.user._id);
       localStorage.setItem('token', data.token);
@@ -31,6 +35,7 @@ export default function RegisterForm({ onSuccess }) {
 
       if (onSuccess) onSuccess();
     } catch (err) {
+      console.error('❌ Registration error (frontend):', err);
       setError(err.message);
     }
   };

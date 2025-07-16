@@ -24,7 +24,9 @@ export default function ChatInterface() {
     const storedToken = localStorage.getItem('token');
     const storedUserId = localStorage.getItem('userId');
     if (!storedToken) {
-      router.push('/login');
+      // Allow guest access
+      setUserId('guest');
+      setAuthChecked(true);
     } else {
       setToken(storedToken);
       setUserId(storedUserId);
