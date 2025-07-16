@@ -9,9 +9,8 @@ services:
       - "3000:3000"
     environment:
       - NEXT_PUBLIC_API_URL=http://backend:10000
-
     networks:
-      - brainbytes-network
+      - monitoring
     depends_on:
       - backend
 
@@ -20,7 +19,7 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "4001:10000"
+      - "10000:10000"
     environment:
       - PORT=10000
       - MONGO_URI=mongodb://mongodb:27017/brainbytes
@@ -30,7 +29,7 @@ services:
     depends_on:
       - mongodb
     networks:
-      - brainbytes-network
+      - monitoring
 
   mongodb:
     image: mongo:4.4
@@ -39,27 +38,59 @@ services:
     volumes:
       - mongodb-data:/data/db
     networks:
-      - brainbytes-network
+      - monitoring
 
   prometheus:
     image: prom/prometheus
+    container_name: prometheus
     ports:
       - "9090:9090"
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./monitoring/alert_rules.yml:/etc/prometheus/alert_rules.yml
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
     networks:
-      - brainbytes-network
+      - monitoring
+    depends_on:
+      - alertmanager
+
+  alertmanager:
+    image: prom/alertmanager
+    container_name: alertmanager
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./monitoring/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+    command:
+      - "--config.file=/etc/alertmanager/alertmanager.yml"
+    networks:
+      - monitoring
 
   node-exporter:
     image: prom/node-exporter
+    container_name: node-exporter
     ports:
       - "9100:9100"
     networks:
-      - brainbytes-network
+      - monitoring
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    depends_on:
+      - prometheus
+    networks:
+      - monitoring
 
 volumes:
+  grafana-storage:
   mongodb-data:
 
 networks:
-  brainbytes-network:
+  monitoring:
     driver: bridge

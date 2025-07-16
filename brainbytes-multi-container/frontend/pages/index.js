@@ -22,6 +22,20 @@ export default function Home() {
     localStorage.setItem('hasRegistered', 'true');
     setActiveForm('login');
   };
+
+  const handleGuestLogin = () => {
+    // Cleanup
+    localStorage.removeItem('token');
+    localStorage.removeItem('userId');
+
+  const guestSessionId = crypto.randomUUID();
+    localStorage.setItem('sessionId', guestSessionId);
+    localStorage.setItem('isAuthenticated', 'true');
+    localStorage.setItem('isGuest', 'true');
+    // Force full refresh to reset state everywhere
+    window.location.reload();
+  };
+  
   const handleDashboard = () => router.push('/dashboard');
   const handleNewChat = () => {
     const newSessionId = crypto.randomUUID();
@@ -33,6 +47,7 @@ export default function Home() {
     localStorage.removeItem('token');
     localStorage.removeItem('userId');
     localStorage.removeItem('sessionId');
+    localStorage.removeItem('isGuest');
     localStorage.setItem('isAuthenticated', 'false');
 
     setIsAuthenticated(false); // ✅ Trigger UI logout state
@@ -81,6 +96,13 @@ export default function Home() {
                 </button>
               </>
             )}
+
+            <button
+              onClick={handleGuestLogin}
+              className={`${styles.authButton} ${styles.guestButton}`}
+            >
+              Continue as Guest
+            </button>
           </div>
         </div>
       </div>

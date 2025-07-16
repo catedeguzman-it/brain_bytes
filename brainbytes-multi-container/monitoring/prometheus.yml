@@ -1,7 +1,29 @@
 global:
   scrape_interval: 15s  # Collect metrics every 15 seconds
+  scrape_timeout: 10s
+  evaluation_interval: 15s  # Evaluate rules every 15 seconds
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['alertmanager:9093']
+
+rule_files:
+  - 'alert_rules.yml'
+  - 'recording_rules.yml'
 
 scrape_configs:
+  - job_name: 'brainbytes_app'
+    static_configs:
+      - targets: ['localhost:3000']
+    metrics_path: /metrics
+    relabel_configs:
+      - source_labels: ['__address__']
+        target_label: 'instance'
+        regex: '(.*):.*'
+        replacement: '${1}'
+    scrape_timeout: 5s
+
   - job_name: 'node-exporter'
     static_configs:
       - targets: ['node-exporter:9100']
@@ -9,3 +31,7 @@ scrape_configs:
   - job_name: 'backend'
     static_configs:
       - targets: ['backend:10000']  # This must match backend service name and port
+
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']

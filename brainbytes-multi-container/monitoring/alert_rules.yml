@@ -1,0 +1,47 @@
+groups:
+  - name: brainbytes-alerts
+    rules:
+      - alert: BackendDown
+        expr: up{job="backend"} == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Backend service is down"
+          description: "No metrics from the backend service for 30 seconds."
+
+      - alert: HighCPUUsage
+        expr: rate(node_cpu_seconds_total{mode="user"}[1m]) > 0.9
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU Usage Detected"
+          description: "CPU usage has been above 90% for 1 minute."
+
+      - alert: HighMemoryUsage
+        expr: ((node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes) > 0.9
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: High Memory Usage
+          description: Memory usage has been over 90% for more than 2 minutes.
+    
+      - alert: HighAIResponseLatency
+        expr: histogram_quantile(0.95, sum(rate(brainbytes_ai_response_duration_seconds_bucket[5m])) by (le)) > 2
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "AI response latency is too high"
+          description: "95th percentile response time exceeded 2s for 2 minutes"
+
+      - alert: LowActiveSessions
+        expr: brainbytes_active_sessions < 1
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "No active sessions"
+          description: "Zero sessions for over 5 minutes - potential outage"
