@@ -8,7 +8,8 @@
     "dev": "nodemon server.js",
     "setup": "node setup.js",
     "test": "echo \"No backend tests yet\" && exit 0",
-    "lint": "eslint"
+    "lint": "eslint",
+    "build": "echo \"No build step required\""
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
