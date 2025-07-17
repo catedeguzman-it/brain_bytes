@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import styles from '../styles/Sidebar.module.css';
 import ConfirmDeleteModal from './ConfirmDeleteModal';
 import modalStyles from '../styles/Modal.module.css';
+import AddMaterialModal from './AddMaterialModal';
+
 
 export default function Sidebar({ userId, onSelectSession }) {
   const [sessions, setSessions] = useState([]);
@@ -10,6 +12,7 @@ export default function Sidebar({ userId, onSelectSession }) {
   const [openMenuId, setOpenMenuId] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null); // { sessionId, topic }
   const [allMessages, setAllMessages] = useState([]);
+  const [showAddModal, setShowAddModal] = useState(false);
 
   useEffect(() => {
     if (!userId) return;
@@ -60,6 +63,14 @@ export default function Sidebar({ userId, onSelectSession }) {
   return (
     <div className={styles.sidebarWrapper}>
       <div className={styles.sidebarTitle}>🧠 Chat History</div>
+
+    <button
+      className={styles.addMaterialButton}
+      onClick={() => setShowAddModal(true)}
+    >
+      ➕ Add Material
+    </button>
+
 
       <input
         type="text"
@@ -151,6 +162,24 @@ export default function Sidebar({ userId, onSelectSession }) {
         onCancel={() => setConfirmDelete(null)}
         onConfirm={handleDeleteConfirmed}
       />
+      <AddMaterialModal
+      visible={showAddModal}
+      onCancel={() => setShowAddModal(false)}
+      onSubmit={({ subject, material }) => {
+        fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/materials`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ subject, material }),
+        })
+          .then(res => res.json())
+          .then(data => {
+            // You can optionally update local state here
+            console.log('Material saved:', data);
+          });
+
+        setShowAddModal(false);
+      }}
+    />
     </div>
   );
 }

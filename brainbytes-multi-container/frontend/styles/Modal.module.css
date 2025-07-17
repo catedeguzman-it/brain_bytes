@@ -68,3 +68,74 @@
 .deleteButton:hover {
   background: #b71c1c;
 }
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal {
+  background: white;
+  padding: 24px;
+  border-radius: 12px;
+  max-width: 420px;
+  width: 90%;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.modal h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-size: 20px;
+  color: #222;
+}
+
+.modalForm label {
+  display: block;
+  margin-bottom: 16px;
+  font-weight: 500;
+  color: #333;
+}
+
+.modalForm input,
+.modalForm select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 6px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.modalActions button {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+}
+
+.modalActions button[type='submit'] {
+  background-color: #0b7285;
+  color: white;
+}
+
+.cancelBtn {
+  background: #f0f0f0;
+  color: #555;
+  border: 1px solid #ccc;
+}

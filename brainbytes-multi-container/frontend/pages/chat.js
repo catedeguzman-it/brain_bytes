@@ -6,6 +6,7 @@ import ChatInterface from '../components/ChatInterface';
 export default function ChatPage() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [chatResetKey, setChatResetKey] = useState(0); // force re-mount ChatInterface
 
   useEffect(() => {
     const auth = localStorage.getItem('isAuthenticated') === 'true';
@@ -21,14 +22,14 @@ export default function ChatPage() {
     window.location.href = '/login';
   };
 
+  const handleDashboard = () => {
+    window.location.href = '/dashboard';
+  };
+
   const handleNewChat = () => {
     const newSessionId = crypto.randomUUID();
     localStorage.setItem('sessionId', newSessionId);
-    window.location.href = `/chat?sessionId=${newSessionId}`;
-  };
-
-  const handleDashboard = () => {
-    window.location.href = '/dashboard';
+    setChatResetKey(prev => prev + 1); // force re-render of ChatInterface
   };
 
   if (isLoading) return <div>Loading...</div>;
@@ -41,7 +42,7 @@ export default function ChatPage() {
         onNewChat={handleNewChat}
         onDashboard={handleDashboard}
       />
-      <ChatInterface />
+      <ChatInterface key={chatResetKey} onNewChat={handleNewChat} />
     </>
   );
 }

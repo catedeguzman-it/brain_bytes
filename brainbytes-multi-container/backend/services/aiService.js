@@ -2,27 +2,6 @@ const fetch = require('node-fetch');
 const MAX_LENGTH = 1000;
 const responseCache = {};
 
-const CATEGORIES = [
-  'Math', 'Science', 'English', 'History', 'Filipino', 'Geography',
-  'Technology', 'Arts', 'Music', 'Health', 'Civics', 'Support', 'General'
-];
-
-// Optional: Basic keyword pre-check fallback
-function detectCategoryFromKeywords(question) {
-  const lower = question.toLowerCase();
-  if (lower.includes('president') || lower.includes('rizal') || lower.includes('revolution'))
-    return 'History';
-  if (lower.includes('philippines') || lower.includes('manila') || lower.includes('region'))
-    return 'Geography';
-  if (lower.includes('salita') || lower.includes('pangungusap') || lower.includes('panitikan'))
-    return 'Filipino';
-  if (lower.includes('math') || /\d+\s*[\+\-\*\/]\s*\d+/.test(lower))
-    return 'Math';
-  if (lower.includes('science') || lower.includes('evaporation') || lower.includes('atom'))
-    return 'Science';
-  return 'General';
-}
-
 const initializeAI = () => {
   console.log('✅ Groq AI service initialized');
   if (!process.env.GROQ_API_KEY) {
@@ -30,8 +9,13 @@ const initializeAI = () => {
   }
 };
 
-async function generateResponse(question) {
-  const cacheKey = question.trim().toLowerCase();
+/**
+ * Generates a focused response based on the selected subject and material
+ * @param {string} question - User's question
+ * @param {{ subject: string, topic: string }} materialContext - Selected subject and topic
+ */
+async function generateResponse(question, materialContext = { subject: 'General', topic: 'General' }) {
+  const cacheKey = `${question.trim().toLowerCase()}|${materialContext.subject}|${materialContext.topic}`;
   if (responseCache[cacheKey]) {
     console.log('⚡ Using cached result for:', cacheKey);
     return responseCache[cacheKey];
@@ -40,22 +24,28 @@ async function generateResponse(question) {
   const GROQ_API_KEY = process.env.GROQ_API_KEY;
   if (!GROQ_API_KEY) {
     return {
-      category: 'General',
-      topic: 'General',
+      category: materialContext.subject,
+      topic: materialContext.topic,
       response: "AI configuration missing. Please set GROQ_API_KEY."
     };
   }
 
-  const preCategory = detectCategoryFromKeywords(question);
-  console.log(`🔍 [Pre-Detected] Category via keyword: ${preCategory}`);
-
   const prompt = `
-You are an expert AI tutor for Filipino students. Respond in JSON format only:
+You are a highly intelligent tutor for K–12 Filipino students.
+
+Only answer questions related to the following material:
+
+📚 Subject: "${materialContext.subject}"
+📘 Topic: "${materialContext.topic}"
+
+Always explain concepts clearly, like you're helping a student understand this topic deeply. Use student-friendly language.
+
+Respond ONLY in this JSON format:
 
 {
-  "category": "One of: ${CATEGORIES.join(' | ')}",
-  "topic": "Short specific topic (e.g., 'Photosynthesis', 'Fractions', 'Philippine Presidents')",
-  "response": "A clear and factual explanation tailored for students in the Philippines"
+  "category": "${materialContext.subject}",
+  "topic": "${materialContext.topic}",
+  "response": "..."
 }
 
 Question: "${question}"
@@ -95,38 +85,32 @@ Question: "${question}"
       const jsonMatch = content.match(/\{[\s\S]*?\}/);
       parsed = JSON.parse(jsonMatch?.[0] || '{}');
     } catch (err) {
-      console.warn("⚠️ Failed to parse JSON from LLM. Falling back.");
-      const fallback = fallbackCategorization(question);
-      responseCache[cacheKey] = fallback;
-      return fallback;
+      console.warn("⚠️ Failed to parse JSON from LLM. Returning fallback response.");
+      return {
+        category: materialContext.subject,
+        topic: materialContext.topic,
+        response: "Sorry, I had trouble understanding your question. Please rephrase it."
+      };
     }
 
-    const finalCategory = CATEGORIES.includes(parsed.category) ? parsed.category : preCategory || 'General';
     const formatted = {
-      category: finalCategory,
-      topic: parsed.topic || 'General',
+      category: materialContext.subject,
+      topic: materialContext.topic,
       response: (parsed.response || 'No answer provided.').slice(0, MAX_LENGTH)
     };
 
-    console.log(`✅ [LLM Parsed] Category: ${formatted.category}, Topic: ${formatted.topic}`);
+    console.log(`✅ [LLM Parsed] Subject: ${formatted.category}, Topic: ${formatted.topic}`);
     responseCache[cacheKey] = formatted;
     return formatted;
 
   } catch (error) {
     console.error("❌ AI call failed:", error);
-    const fallback = fallbackCategorization(question);
-    responseCache[cacheKey] = fallback;
-    return fallback;
+    return {
+      category: materialContext.subject,
+      topic: materialContext.topic,
+      response: "Sorry, I encountered a problem while answering. Please try again."
+    };
   }
-}
-
-function fallbackCategorization(question) {
-  const cat = detectCategoryFromKeywords(question);
-  return {
-    category: cat,
-    topic: 'General',
-    response: "I'm not quite sure, but this may relate to " + cat + ". Can you clarify your question?"
-  };
 }
 
 module.exports = {
