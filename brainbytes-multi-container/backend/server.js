@@ -20,6 +20,7 @@ const httpRequestCounter = new promClient.Counter({
   name: 'http_requests_total',
   help: 'Total number of HTTP requests',
   labelNames: ['method', 'route', 'status'],
+  registers: [register],
 });
 
 dotenv.config();
@@ -59,6 +60,10 @@ app.use('/api', metricRoutes); // ✅ Use /api prefix for consistency
 
 // ──────── HEALTH CHECK ────────
 app.get('/health', (req, res) => res.send('OK'));
+
+app.get('/', (req, res) => {
+  res.send('BrainBytes backend root route!');
+});
 
 // 🧪 Prometheus metrics endpoint (from prom-client)
 app.get('/metrics', async (req, res) => {
