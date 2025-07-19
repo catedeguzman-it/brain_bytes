@@ -1,81 +1,64 @@
 const express = require('express');
-const path = require('path');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const { connectToDatabase } = require('./models/db');
-const { setDb } = require('./controllers/chatController');
+const { initializeAI } = require('./services/aiService');
+
+// Routes
 const authRoutes = require('./routes/authRoutes');
 const chatRoutes = require('./routes/chatRoutes');
 const userRoutes = require('./routes/userRoutes');
 const messageRoutes = require('./routes/messageRoutes');
-const metricRoutes = require('./routes/metricRoutes'); // ✅ Import your router
-const { initializeAI } = require('./services/aiService');
+const metricRoutes = require('./routes/metricRoutes');
 
-// 🧪 Prometheus client
-const promClient = require('prom-client');
-const register = new promClient.Registry();
-promClient.collectDefaultMetrics({ register });
+// ✅ Prometheus metrics middleware
+const {
+  metricsMiddleware,
+  metricsHandler
+} = require('./metrics');
 
-const httpRequestCounter = new promClient.Counter({
-  name: 'http_requests_total',
-  help: 'Total number of HTTP requests',
-  labelNames: ['method', 'route', 'status'],
-  registers: [register],
-});
-
+// Load environment variables
 dotenv.config();
+
+// App setup
 const app = express();
 const PORT = process.env.PORT || 4000;
-
 console.log('CLIENT_ORIGIN in backend:', process.env.CLIENT_ORIGIN);
 
-// ───────────────────────
+// ───────────────────────────────
 // MIDDLEWARE
-// ───────────────────────
+// ───────────────────────────────
 app.use(cors({
   origin: [
     'http://localhost:3000',
     'https://brainbytes-frontend-zk1e.onrender.com'
   ],
-  credentials: true,
+  credentials: true
 }));
-
 app.use(express.json());
+app.use(metricsMiddleware); // Prometheus request tracking
 
-app.use((req, res, next) => {
-  res.on('finish', () => {
-    httpRequestCounter.labels(req.method, req.path, res.statusCode).inc();
-  });
-  next();
-});
-
-// ───────────────────────
+// ───────────────────────────────
 // ROUTES
-// ───────────────────────
+// ───────────────────────────────
 app.use('/api', authRoutes);
 app.use('/api', chatRoutes);
 app.use('/api', userRoutes);
 app.use('/api', messageRoutes);
-app.use('/api', metricRoutes); // ✅ Use /api prefix for consistency
+app.use('/api', metricRoutes);
 
-// ──────── HEALTH CHECK ────────
+// ───────────────────────────────
+// SYSTEM ROUTES
+// ───────────────────────────────
 app.get('/health', (req, res) => res.send('OK'));
+app.get('/metrics', metricsHandler);
+app.get('/', (req, res) => res.send('BrainBytes backend root route!'));
 
-app.get('/', (req, res) => {
-  res.send('BrainBytes backend root route!');
-});
-
-// 🧪 Prometheus metrics endpoint (from prom-client)
-app.get('/metrics', async (req, res) => {
-  res.setHeader('Content-Type', register.contentType);
-  res.end(await register.metrics());
-});
-
-// ───────────────────────
+// ───────────────────────────────
 // START SERVER
-// ───────────────────────
+// ───────────────────────────────
 async function startServer() {
-  const db = await connectToDatabase();
+  await connectToDatabase();
   initializeAI();
   app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);

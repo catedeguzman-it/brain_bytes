@@ -1,20 +1,20 @@
 const client = require('prom-client');
 
-// Create a Registry and collect default Node.js metrics
+// ✅ Create and expose a shared Prometheus Registry
 const register = new client.Registry();
 client.collectDefaultMetrics({ register });
 
-// ─────────────────────────────────────────────────────────────
+// ────────────────────────────────
 // ⬛ Application Metrics
-// ─────────────────────────────────────────────────────────────
+// ────────────────────────────────
 
 // 1. Counter: Total HTTP Requests
 const httpRequestCounter = new client.Counter({
   name: 'brainbytes_http_requests_total',
   help: 'Total number of HTTP requests received',
   labelNames: ['method', 'endpoint', 'status'],
-  registers: [register],
 });
+register.registerMetric(httpRequestCounter);
 
 // 2. Histogram: HTTP Request Duration
 const httpRequestDuration = new client.Histogram({
@@ -22,15 +22,15 @@ const httpRequestDuration = new client.Histogram({
   help: 'Duration of HTTP requests in seconds',
   labelNames: ['method', 'endpoint', 'status'],
   buckets: [0.01, 0.05, 0.1, 0.5, 1, 2, 5],
-  registers: [register],
 });
+register.registerMetric(httpRequestDuration);
 
 // 3. Gauge: Active Tutoring Sessions
 const activeSessionsGauge = new client.Gauge({
   name: 'brainbytes_active_sessions',
   help: 'Current number of active tutoring sessions',
-  registers: [register],
 });
+register.registerMetric(activeSessionsGauge);
 activeSessionsGauge.set(0); // initialize
 
 // 4. Counter: AI Requests
@@ -38,8 +38,8 @@ const aiRequestCounter = new client.Counter({
   name: 'brainbytes_ai_requests_total',
   help: 'Total number of AI requests',
   labelNames: ['model', 'status'],
-  registers: [register],
 });
+register.registerMetric(aiRequestCounter);
 
 // 5. Histogram: AI Response Duration
 const aiResponseDuration = new client.Histogram({
@@ -47,37 +47,36 @@ const aiResponseDuration = new client.Histogram({
   help: 'Duration of AI responses in seconds',
   labelNames: ['model'],
   buckets: [0.1, 0.3, 0.5, 1, 2, 3, 5],
-  registers: [register],
 });
+register.registerMetric(aiResponseDuration);
 
 // 6. Counter: Questions Asked
 const questionsCounter = new client.Counter({
   name: 'brainbytes_questions_total',
   help: 'Total number of questions asked',
-  registers: [register],
 });
+register.registerMetric(questionsCounter);
 
 // 7. Counter: Tutoring Sessions
 const sessionsCounter = new client.Counter({
   name: 'brainbytes_tutoring_sessions_total',
   help: 'Total number of tutoring sessions completed',
-  registers: [register],
 });
+register.registerMetric(sessionsCounter);
 
-// 8.
+// 8. Histogram: Tutoring Session Duration
 const sessionDurationHistogram = new client.Histogram({
   name: 'brainbytes_session_duration_seconds',
   help: 'Duration of tutoring sessions in seconds',
   buckets: [60, 300, 600, 1200, 1800, 3600],
-  registers: [register],
 });
+register.registerMetric(sessionDurationHistogram);
 
-// ─────────────────────────────────────────────────────────────
-// ⬛ Middleware to Collect HTTP Request Metrics
-// ─────────────────────────────────────────────────────────────
+// ────────────────────────────────
+// ⬛ Middleware for HTTP Metrics
+// ────────────────────────────────
 function metricsMiddleware(req, res, next) {
   const start = Date.now();
-
   res.on('finish', () => {
     const duration = (Date.now() - start) / 1000;
 
@@ -97,17 +96,17 @@ function metricsMiddleware(req, res, next) {
   next();
 }
 
-// ─────────────────────────────────────────────────────────────
-// ⬛ Metrics Endpoint Handler
-// ─────────────────────────────────────────────────────────────
+// ────────────────────────────────
+// ⬛ Prometheus /metrics handler
+// ────────────────────────────────
 async function metricsHandler(req, res) {
   res.set('Content-Type', register.contentType);
   res.end(await register.metrics());
 }
 
-// ─────────────────────────────────────────────────────────────
-// ⬛ Active Session Control
-// ─────────────────────────────────────────────────────────────
+// ────────────────────────────────
+// ⬛ AI & Session Helpers
+// ────────────────────────────────
 function incrementActiveSessions() {
   activeSessionsGauge.inc();
 }
@@ -116,35 +115,22 @@ function decrementActiveSessions() {
   activeSessionsGauge.dec();
 }
 
-function startSession(req, res) {
-  incrementActiveSessions(); 
-  // session start logic...
-  res.send('Session started');
-}
-
-// Example: when a session ends
-function endSession(req, res) {
-  decrementActiveSessions();
-  // session cleanup...
-  res.send('Session ended');
-}
-
-// ─────────────────────────────────────────────────────────────
-// ⬛ AI Metrics Usage Example (manual trigger from controller)
-// ─────────────────────────────────────────────────────────────
 function recordAIRequest(model, statusCode, durationInSeconds) {
   aiRequestCounter.inc({ model, status: statusCode });
   aiResponseDuration.observe({ model }, durationInSeconds);
 }
 
-// ─────────────────────────────────────────────────────────────
-// ⬛ Exports
-// ─────────────────────────────────────────────────────────────
+// ────────────────────────────────
+// ⬛ Export everything needed
+// ────────────────────────────────
 module.exports = {
   metricsMiddleware,
   metricsHandler,
   incrementActiveSessions,
   decrementActiveSessions,
   recordAIRequest,
-  register, // for testing/export
+  register,
+  questionsCounter,
+  sessionsCounter,
+  sessionDurationHistogram,
 };
