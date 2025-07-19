@@ -50,6 +50,28 @@ const aiResponseDuration = new client.Histogram({
   registers: [register],
 });
 
+// 6. Counter: Questions Asked
+const questionsCounter = new client.Counter({
+  name: 'brainbytes_questions_total',
+  help: 'Total number of questions asked',
+  registers: [register],
+});
+
+// 7. Counter: Tutoring Sessions
+const sessionsCounter = new client.Counter({
+  name: 'brainbytes_tutoring_sessions_total',
+  help: 'Total number of tutoring sessions completed',
+  registers: [register],
+});
+
+// 8.
+const sessionDurationHistogram = new client.Histogram({
+  name: 'brainbytes_session_duration_seconds',
+  help: 'Duration of tutoring sessions in seconds',
+  buckets: [60, 300, 600, 1200, 1800, 3600],
+  registers: [register],
+});
+
 // ─────────────────────────────────────────────────────────────
 // ⬛ Middleware to Collect HTTP Request Metrics
 // ─────────────────────────────────────────────────────────────
@@ -92,6 +114,19 @@ function incrementActiveSessions() {
 
 function decrementActiveSessions() {
   activeSessionsGauge.dec();
+}
+
+function startSession(req, res) {
+  incrementActiveSessions(); 
+  // session start logic...
+  res.send('Session started');
+}
+
+// Example: when a session ends
+function endSession(req, res) {
+  decrementActiveSessions();
+  // session cleanup...
+  res.send('Session ended');
 }
 
 // ─────────────────────────────────────────────────────────────

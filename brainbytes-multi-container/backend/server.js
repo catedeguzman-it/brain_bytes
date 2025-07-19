@@ -22,6 +22,7 @@ const httpRequestCounter = new promClient.Counter({
   name: 'http_requests_total',
   help: 'Total number of HTTP requests',
   labelNames: ['method', 'route', 'status'],
+  registers: [register],
 });
 
 // ─── App Initialization ────────────────────────
@@ -66,6 +67,14 @@ app.use('/api', materialRoutes); // ✅ Register the materials route
 // ────────────────
 app.get('/health', (req, res) => res.send('OK'));
 
+<<<<<<< HEAD
+=======
+app.get('/', (req, res) => {
+  res.send('BrainBytes backend root route!');
+});
+
+// 🧪 Prometheus metrics endpoint (from prom-client)
+>>>>>>> 6ca690c0d6eb68ce78cfedc464a7189051368666
 app.get('/metrics', async (req, res) => {
   res.setHeader('Content-Type', register.contentType);
   res.end(await register.metrics());
