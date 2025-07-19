@@ -6,11 +6,12 @@ exports.createSession = async (userId) => {
   const sessionId = crypto.randomUUID();
 
   const session = {
-    sessionId, // string-based UUID
-    userId,    // assuming userId is a string too
+    sessionId,
+    userId: userId || null, // null for guests
     startedAt: new Date(),
     lastActiveAt: new Date(),
-    isActive: true
+    isActive: true,
+    isGuest: !userId // flag for guest sessions
   };
 
   await db.collection('sessions').insertOne(session);

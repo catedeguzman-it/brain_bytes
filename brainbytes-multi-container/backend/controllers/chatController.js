@@ -14,17 +14,17 @@ const chatHandler = async (req, res) => {
       return res.status(400).json({ error: 'Invalid sessionId or message' });
     }
 
-    if (!userId) {
-      return res.status(400).json({ error: 'Missing userId' });
-    }
+    // Allow userId to be null or 'guest' for guest mode
+    const isGuest = !userId || userId === 'guest';
+
     await updateSessionActivity(sessionId);
 
     const timestamp = new Date();
 
-    // Save user message
+    // Save user message (userId: null for guests)
     await db.collection('messages').insertOne({
       sessionId,
-      userId,
+      userId: isGuest ? null : userId,
       sender: 'user',
       text: message,
       timestamp
@@ -87,7 +87,7 @@ const chatHandler = async (req, res) => {
     // Save AI response
     await db.collection('messages').insertOne({
       sessionId,
-      userId,
+      userId: isGuest ? null : userId,
       sender: 'ai',
       text: aiText,
       category: aiCategory,
@@ -104,8 +104,9 @@ const chatHandler = async (req, res) => {
           updatedAt: new Date()
         },
         $setOnInsert: {
-          userId,
-          createdAt: new Date()
+          userId: isGuest ? null : userId,
+          createdAt: new Date(),
+          isGuest: isGuest
         }
       },
       { upsert: true }
