@@ -77,10 +77,15 @@ const chatHandler = async (req, res) => {
       ).join('\n') +
       `\nUser: ${message}\nAI:`;
 
+    
     // Generate AI response
     let aiCategory = 'General';
     let aiTopic = 'General';
     let aiText = "I'm here to help, but I need a bit more context.";
+    let aiStatus = 'success';
+    let aiModel = 'groq'; // change to actual model name if dynamic
+
+    const startTime = process.hrtime(); // ⏱️ Start timing
 
     try {
       console.log('[🧠 Prompt sent to AI]:', contextPrompt);
@@ -94,6 +99,12 @@ const chatHandler = async (req, res) => {
       console.error('❌ AI response failed:', err);
     }
 
+    const duration = process.hrtime(startTime);
+    const durationInSeconds = duration[0] + duration[1] / 1e9;
+
+    // Record metric
+    recordAIRequest(aiModel, aiStatus, durationInSeconds);
+    
     // Save AI response
     await db.collection('messages').insertOne({
       sessionId,

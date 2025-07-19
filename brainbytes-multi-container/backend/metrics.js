@@ -126,8 +126,8 @@ function recordAIRequest(model, statusCode, durationInSeconds) {
 module.exports = {
   metricsMiddleware,
   metricsHandler,
-  incrementActiveSessions,
-  decrementActiveSessions,
+  startSession,
+  endSession,
   recordAIRequest,
   register,
   questionsCounter,
