@@ -47,6 +47,8 @@ services:
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
       - ./monitoring/alert_rules.yml:/etc/prometheus/alert_rules.yml
+      - ./monitoring/recording_rules.yml:/etc/prometheus/recording_rules.yml
+
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
     networks:

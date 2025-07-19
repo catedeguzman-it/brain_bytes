@@ -1,4 +1,6 @@
 const fetch = require('node-fetch');
+const { recordAIRequest } = require('../metrics'); // ✅ Prometheus tracker
+
 const MAX_LENGTH = 1000;
 const responseCache = {};
 
@@ -7,19 +9,13 @@ const CATEGORIES = [
   'Technology', 'Arts', 'Music', 'Health', 'Civics', 'Support', 'General'
 ];
 
-// Optional: Basic keyword pre-check fallback
 function detectCategoryFromKeywords(question) {
   const lower = question.toLowerCase();
-  if (lower.includes('president') || lower.includes('rizal') || lower.includes('revolution'))
-    return 'History';
-  if (lower.includes('philippines') || lower.includes('manila') || lower.includes('region'))
-    return 'Geography';
-  if (lower.includes('salita') || lower.includes('pangungusap') || lower.includes('panitikan'))
-    return 'Filipino';
-  if (lower.includes('math') || /\d+\s*[\+\-\*\/]\s*\d+/.test(lower))
-    return 'Math';
-  if (lower.includes('science') || lower.includes('evaporation') || lower.includes('atom'))
-    return 'Science';
+  if (lower.includes('president') || lower.includes('rizal') || lower.includes('revolution')) return 'History';
+  if (lower.includes('philippines') || lower.includes('manila') || lower.includes('region')) return 'Geography';
+  if (lower.includes('salita') || lower.includes('pangungusap') || lower.includes('panitikan')) return 'Filipino';
+  if (lower.includes('math') || /\d+\s*[\+\-\*\/]\s*\d+/.test(lower)) return 'Math';
+  if (lower.includes('science') || lower.includes('evaporation') || lower.includes('atom')) return 'Science';
   return 'General';
 }
 
@@ -47,7 +43,7 @@ async function generateResponse(question) {
   }
 
   const preCategory = detectCategoryFromKeywords(question);
-  console.log(`🔍 [Pre-Detected] Category via keyword: ${preCategory}`);
+  const startTime = Date.now();
 
   const prompt = `
 You are an expert AI tutor for Filipino students. Respond in JSON format only:
@@ -108,12 +104,18 @@ Question: "${question}"
       response: (parsed.response || 'No answer provided.').slice(0, MAX_LENGTH)
     };
 
+    const duration = (Date.now() - startTime) / 1000;
+    recordAIRequest("llama-4-scout", "200", duration); // ✅ success metric
+
     console.log(`✅ [LLM Parsed] Category: ${formatted.category}, Topic: ${formatted.topic}`);
     responseCache[cacheKey] = formatted;
     return formatted;
 
   } catch (error) {
     console.error("❌ AI call failed:", error);
+
+    recordAIRequest("llama-4-scout", "500", 0); // ✅ failure metric
+
     const fallback = fallbackCategorization(question);
     responseCache[cacheKey] = fallback;
     return fallback;

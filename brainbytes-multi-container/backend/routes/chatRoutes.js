@@ -4,13 +4,15 @@ const { chatHandler } = require('../controllers/chatController');
 const { getMessagesBySession } = require('../utils/messageUtils');
 const { getDb } = require('../models/db');
 
+// ✅ Import Prometheus metric
+const { sessionDurationHistogram } = require('../metrics');
+
 // ─── POST: Handle chat messages ───────────────────────────
 router.post('/chat', chatHandler);
 
 // ─── GET: Chat history for session ─────────────────────────
 router.get('/chat/history/:sessionId', async (req, res) => {
   const { sessionId } = req.params;
-
   try {
     const messages = await getMessagesBySession(sessionId);
     if (!messages) {
@@ -18,7 +20,7 @@ router.get('/chat/history/:sessionId', async (req, res) => {
     }
     res.json({ messages });
   } catch (err) {
-    console.error('Error fetching chat history:', err);
+    console.error('❌ Error fetching chat history:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -37,7 +39,7 @@ router.get('/chat/history/user/:userId', async (req, res) => {
 
     res.json({ messages });
   } catch (err) {
-    console.error('Error fetching user messages:', err);
+    console.error('❌ Error fetching user messages:', err);
     res.status(500).json({ error: 'Failed to fetch user messages.' });
   }
 });
@@ -55,8 +57,7 @@ router.get('/chat/sessions/:userId', async (req, res) => {
       .limit(20)
       .toArray();
 
-    // Get last message per session
-    const sessionIds = sessions.map((s) => s.sessionId);
+    const sessionIds = sessions.map(s => s.sessionId);
     const messages = await db.collection('messages')
       .aggregate([
         { $match: { sessionId: { $in: sessionIds } } },
@@ -71,7 +72,6 @@ router.get('/chat/sessions/:userId', async (req, res) => {
       ])
       .toArray();
 
-    // Merge last message into session data
     const messagesMap = Object.fromEntries(messages.map(m => [m._id, m]));
     const enrichedSessions = sessions.map(session => ({
       sessionId: session.sessionId,
@@ -83,23 +83,47 @@ router.get('/chat/sessions/:userId', async (req, res) => {
 
     res.json({ sessions: enrichedSessions });
   } catch (err) {
-    console.error('Error fetching chat sessions:', err);
+    console.error('❌ Error fetching chat sessions:', err);
     res.status(500).json({ error: 'Failed to fetch sessions.' });
   }
 });
 
-// DELETE /chat/session/:sessionId
+// ─── POST: End session and track duration ───────────────────
+router.post('/chat/session/:sessionId/end', async (req, res) => {
+  const db = getDb();
+  const { sessionId } = req.params;
+
+  try {
+    const session = await db.collection('chat_sessions').findOne({ sessionId });
+    if (!session || !session.createdAt) {
+      return res.status(404).json({ error: 'Session not found or missing start time.' });
+    }
+
+    const end = new Date();
+    const duration = (end - new Date(session.createdAt)) / 1000;
+
+    sessionDurationHistogram.observe(duration);
+
+    await db.collection('chat_sessions').updateOne(
+      { sessionId },
+      { $set: { endedAt: end, duration } }
+    );
+
+    res.json({ sessionId, duration });
+  } catch (err) {
+    console.error('❌ Error ending session:', err);
+    res.status(500).json({ error: 'Failed to end session.' });
+  }
+});
+
+// ─── DELETE: Remove session & messages ──────────────────────
 router.delete('/chat/session/:sessionId', async (req, res) => {
   const db = getDb();
   const { sessionId } = req.params;
 
   try {
-    // Delete all messages for the session
     await db.collection('messages').deleteMany({ sessionId });
-
-    // Optionally delete session record from chat_sessions
     await db.collection('chat_sessions').deleteOne({ sessionId });
-
     res.json({ success: true });
   } catch (err) {
     console.error('❌ Failed to delete session:', err);
@@ -107,7 +131,7 @@ router.delete('/chat/session/:sessionId', async (req, res) => {
   }
 });
 
-// GET: Recent messages for a specific user
+// ─── GET: Recent messages for user ──────────────────────────
 router.get('/messages/recent/:userId', async (req, res) => {
   const db = getDb();
   const { userId } = req.params;
@@ -129,6 +153,5 @@ router.get('/messages/recent/:userId', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch recent messages.' });
   }
 });
-
 
 module.exports = router;

@@ -3,6 +3,12 @@ const { generateResponse } = require('../services/aiService');
 const { updateSessionActivity } = require('../models/sessionModels');
 const { getDb } = require('../models/db');
 
+// ✅ Prometheus custom metrics
+const {
+  questionsCounter,
+  sessionsCounter
+} = require('../metrics');
+
 const chatHandler = async (req, res) => {
   const db = getDb();
 
@@ -17,8 +23,11 @@ const chatHandler = async (req, res) => {
     if (!userId) {
       return res.status(400).json({ error: 'Missing userId' });
     }
-    await updateSessionActivity(sessionId);
 
+    // ✅ Count valid user question
+    questionsCounter.inc();
+
+    await updateSessionActivity(sessionId);
     const timestamp = new Date();
 
     // Save user message
@@ -30,7 +39,7 @@ const chatHandler = async (req, res) => {
       timestamp
     });
 
-    // Detect and store language preference if explicitly stated
+    // Detect language preference
     let detectedPreference = null;
     if (/i prefer english/i.test(message) || /english only/i.test(message)) {
       detectedPreference = 'english';
@@ -45,25 +54,23 @@ const chatHandler = async (req, res) => {
       );
     }
 
-    // Retrieve previous messages (limit to last 10 for performance)
+    // Get last 10 messages
     const previousMessages = await db.collection('messages')
       .find({ sessionId })
-      .sort({ timestamp: -1 }) // newest first
+      .sort({ timestamp: -1 })
       .limit(10)
       .toArray();
 
-    const orderedMessages = previousMessages.reverse(); // back to chronological
+    const orderedMessages = previousMessages.reverse();
 
-    // Retrieve language preference from session (if set)
+    // Retrieve session data
     const sessionData = await db.collection('chat_sessions').findOne({ sessionId });
     const langPref = sessionData?.languagePreference || 'english';
 
-    // Build system instruction based on preference
     const systemInstruction = langPref === 'tagalog'
       ? "Ikaw ay isang AI tutor. Sumagot sa Tagalog maliban na lang kung hilingin ng user ang Ingles."
       : "You are an AI tutor. Respond in English unless the user specifically requests Tagalog.";
 
-    // Build prompt with system instruction + limited message history
     const contextPrompt = systemInstruction + '\n' +
       orderedMessages.map(m =>
         `${m.sender === 'user' ? 'User' : 'AI'}: ${m.text}`
@@ -76,12 +83,15 @@ const chatHandler = async (req, res) => {
     let aiText = "I'm here to help, but I need a bit more context.";
 
     try {
+      console.log('[🧠 Prompt sent to AI]:', contextPrompt);
       const ai = await generateResponse(contextPrompt);
+      console.log('[✅ AI responded]:', ai);
+
       aiText = ai.response || aiText;
       aiCategory = ai.category || aiCategory;
       aiTopic = ai.topic || aiTopic;
     } catch (err) {
-      console.warn('⚠️ GROQ fallback failed:', err);
+      console.error('❌ AI response failed:', err);
     }
 
     // Save AI response
@@ -95,8 +105,8 @@ const chatHandler = async (req, res) => {
       timestamp: new Date()
     });
 
-    // Update session
-    await db.collection('chat_sessions').updateOne(
+    // Update or insert session
+    const result = await db.collection('chat_sessions').updateOne(
       { sessionId },
       {
         $set: {
@@ -110,6 +120,11 @@ const chatHandler = async (req, res) => {
       },
       { upsert: true }
     );
+
+    // ✅ Track new session creation
+    if (result.upsertedCount > 0) {
+      sessionsCounter.inc();
+    }
 
     res.json({
       message: aiText,
