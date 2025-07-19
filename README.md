@@ -6,6 +6,23 @@
 ## Project Overview
 BrainBytes is an AI-powered tutoring platform designed to provide accessible academic assistance to Filipino students. This project implements the platform using modern DevOps practices and containerization.
 
+## 📚 Table of Contents
+- [Project Overview](#project-overview)
+- [Team Members](#team-members)
+- [Project Goals](#project-goals)
+- [Technology Stack](#technology-stack)
+- [Development Environment Setup Verification](#development-environment-setup-verification)
+- [Sample Architecture](#sample-architecture)
+- [Containerized Components](#-containerized-components)
+- [Port Mappings](#-port-mappings)
+- [Data Flow Diagram](#-data-flow-diagram)
+- [AI Model Integration](#-ai-model-integration)
+- [Data Storage](#-data-storage)
+- [Observability Stack](#-observability-stack)
+- [Future Improvements](#-future-improvements)
+- [External Dependencies](#-external-dependencies)
+- [Milestone Task Distribution](#-task-distribution)
+
 ## Team Members
 - Jennifer Cerio - Backend Developer - [lr.jecerio@mmdc.mcl.edu.ph]
 - Catherine De Guzman - Frontend Developer - [lr.cdguzman@mmdc.mcl.edu.ph]
@@ -43,7 +60,7 @@ Docker version 28.0.4, build b8034c0
 
 # Sample Architecture
 
-![alt text](<brainbytes_docs/Architecture Diagram _ Mermaid Chart-2025-07-19-212508.svg>)
+![alt text](brainbytes_docs/architecture-diagram.svg)
 
 ## 🐳 Containerized Components
 
@@ -69,7 +86,7 @@ Docker version 28.0.4, build b8034c0
 
 ## 🧭 Data Flow Diagram
 
-![alt text](<brainbytes_docs/Data Flow Diagram _ Mermaid Chart-2025-07-19-212224.svg>)
+![alt text](brainbytes_docs/data-flow-diagram.svg)
 
 ## 🤖 AI Model Integration
 - API Used: GROQ Inference API
@@ -96,7 +113,7 @@ Docker version 28.0.4, build b8034c0
 | **Groq**       | AI inference engine | `GROQ_API_KEY`          |
 | **Docker Hub** | Container images    | `FROM node:18`, `mongo` |
 
-# Milestone 1 Task Distribution
+## Task Distribution
 
 ### Week 1: Container Basics
 
