@@ -116,6 +116,7 @@ function decrementActiveSessions() {
 }
 
 function recordAIRequest(model, statusCode, durationInSeconds) {
+  console.log(`[recordAIRequest] model=${model}, status=${statusCode}, duration=${durationInSeconds}s`);
   aiRequestCounter.inc({ model, status: statusCode });
   aiResponseDuration.observe({ model }, durationInSeconds);
 }
@@ -126,8 +127,9 @@ function recordAIRequest(model, statusCode, durationInSeconds) {
 module.exports = {
   metricsMiddleware,
   metricsHandler,
-  startSession,
-  endSession,
+  incrementActiveSessions,
+  decrementActiveSessions,
+  aiResponseDuration,
   recordAIRequest,
   register,
   questionsCounter,

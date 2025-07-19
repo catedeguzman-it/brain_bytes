@@ -2,6 +2,7 @@ const { ObjectId } = require('mongodb');
 const { generateResponse } = require('../services/aiService');
 const { updateSessionActivity } = require('../models/sessionModels');
 const { getDb } = require('../models/db');
+const { recordAIRequest } = require('../metrics');
 
 // ✅ Prometheus custom metrics
 const {
@@ -95,15 +96,16 @@ const chatHandler = async (req, res) => {
       aiText = ai.response || aiText;
       aiCategory = ai.category || aiCategory;
       aiTopic = ai.topic || aiTopic;
+
+      const duration = process.hrtime(startTime);
+      const durationInSeconds = duration[0] + duration[1] / 1e9;
+
+      // Record metric
+      recordAIRequest(aiModel, aiStatus, durationInSeconds);
+
     } catch (err) {
       console.error('❌ AI response failed:', err);
     }
-
-    const duration = process.hrtime(startTime);
-    const durationInSeconds = duration[0] + duration[1] / 1e9;
-
-    // Record metric
-    recordAIRequest(aiModel, aiStatus, durationInSeconds);
     
     // Save AI response
     await db.collection('messages').insertOne({
