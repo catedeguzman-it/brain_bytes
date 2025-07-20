@@ -3,6 +3,8 @@
 ![CI/CD Status](https://github.com/catedeguzman-it/brain_bytes/actions/workflows/main.yml/badge.svg)
 ![Deploy Status](https://github.com/catedeguzman-it/brain_bytes/actions/workflows/deploy.yml/badge.svg)
 
+[🎤 BrainBytes Platform Demo](https://youtu.be/efyEETg2fL4)
+
 ## Project Overview
 BrainBytes is an AI-powered tutoring platform designed to provide accessible academic assistance to Filipino students. This project implements the platform using modern DevOps practices and containerization.
 
