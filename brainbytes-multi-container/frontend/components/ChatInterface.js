@@ -180,7 +180,7 @@ export default function ChatInterface() {
               className={styles.messageInput}
             />
             <button type="submit" className={styles.sendButton}>
-              Start Learning!
+              Send
             </button>
           </form>
         </div>
